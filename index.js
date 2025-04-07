@@ -919,10 +919,9 @@ app.post('/impact', async (req, res) => {
         staff_id,
         severity,
         g_force,
-        "location",
-        occurred_at
+        "location"
       )
-      VALUES ($1, $2, $3, $4, $5, COALESCE($6, NOW()))
+      VALUES ($1,(SELECT assigned_staff_id FROM "card" WHERE uid = $2 and deleted_at is null), $3, $4, $5)
       RETURNING id
     `;
     const result = await client.query(insertQuery, [
@@ -930,8 +929,7 @@ app.post('/impact', async (req, res) => {
       staff_id || null,
       severity,
       g_force,
-      location || null,
-      occurred_at || null
+      location || null
     ]);
 
     res.status(201).json({ status: 'OK', impact_id: result.rows[0].id });

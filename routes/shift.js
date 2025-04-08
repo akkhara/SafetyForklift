@@ -102,43 +102,58 @@ router.get('/', async (req, res) => {
 	}
 	const client = await pool.connect();
 	try {
-		// ดึงค่า filters จาก query string
-		const { company_id, card_uid, staff_name, fleet_name, start_date, end_date } = req.query;
-    let filters = { company_id, card_uid, staff_name, fleet_name, start_date, end_date };
+		// ดึงค่ากรองจาก query string
+		let { company_id, card_uid, staff_name, fleet_name, start_date, end_date } = req.query;
 
-    // หากผู้ใช้ไม่ใช่ super_admin ให้กำหนด company_id จาก session
-    if (req.session.user.role !== 'super_admin') {
-      filters.company_id = req.session.user.company_id;
-    }
+		// หากไม่มีการส่ง start_date หรือ end_date ให้กำหนดเป็นวันแรกและวันสุดท้ายของเดือนปัจจุบัน
+		if (!start_date || !end_date) {
+			const currentDate = new Date();
+			const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+			const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+			if (!start_date) {
+				start_date = firstDay.toISOString().split('T')[0];
+			}
+			if (!end_date) {
+				end_date = lastDay.toISOString().split('T')[0];
+			}
+		}
 
-		// สร้าง query
+		// สร้าง object filters
+		let filters = { company_id, card_uid, staff_name, fleet_name, start_date, end_date };
+
+		// หากผู้ใช้ไม่ใช่ super_admin ให้บังคับให้ filters.company_id เป็นของผู้ใช้เท่านั้น
+		if (req.session.user.role !== 'super_admin') {
+			filters.company_id = req.session.user.company_id;
+		}
+
+		// สร้าง query โดยใช้ฟังก์ชัน buildShiftQuery (ฟังก์ชันนี้จะสร้าง SQL และ params ตาม filters ที่ส่งมา)
 		const { queryString, params } = buildShiftQuery(filters);
 
 		// รัน query สำหรับ shift report
-    const result = await client.query(queryString, params);
-    const shifts = result.rows;
+		const result = await client.query(queryString, params);
+		const shifts = result.rows;
 
-		// ดึงรายชื่อ company สำหรับ dropdown
-    let companyQuery;
-    let companyParams = [];
-    if (req.session.user.role !== 'super_admin') {
-      companyQuery = `
-        SELECT id, name
-        FROM company
-        WHERE id = $1 AND deleted_at IS NULL
-        ORDER BY name ASC
-      `;
-      companyParams.push(req.session.user.company_id);
-    } else {
-      companyQuery = `
-        SELECT id, name
-        FROM company
-        WHERE deleted_at IS NULL
-        ORDER BY name ASC
-      `;
-    }
-    const companyResult = await client.query(companyQuery, companyParams);
-    const companies = companyResult.rows;
+		// ดึงรายชื่อบริษัทสำหรับ dropdown
+		let companyQuery;
+		let companyParams = [];
+		if (req.session.user.role !== 'super_admin') {
+			companyQuery = `
+		  SELECT id, name
+		  FROM company
+		  WHERE id = $1 AND deleted_at IS NULL
+		  ORDER BY name ASC
+		`;
+			companyParams.push(req.session.user.company_id);
+		} else {
+			companyQuery = `
+		  SELECT id, name
+		  FROM company
+		  WHERE deleted_at IS NULL
+		  ORDER BY name ASC
+		`;
+		}
+		const companyResult = await client.query(companyQuery, companyParams);
+		const companies = companyResult.rows;
 
 		res.render('shifts', {
 			shifts,

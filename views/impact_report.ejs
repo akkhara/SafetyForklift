@@ -20,7 +20,7 @@
   <%- include('partials/navbar') %>
 
     <div class="container-fluid mt-4">
-      <h1>Impact Report</h1>
+      <h1 class="text-center mb-4">Impact Report</h1>
       <!-- ฟอร์มกรองข้อมูล -->
       <div class="card filter-card">
         <div class="card-header bg-primary text-white">Filter Options</div>
@@ -73,53 +73,67 @@
         </div>
       </div>
 
+      <!-- ปุ่ม Export -->
+      <div class="mt-3 text-end export-buttons">
+        <a href="/reports/impact/export/csv?<%= Object.keys(filters).map(key => key + '=' + (filters[key] ?? '')).join('&') %>"
+          class="btn btn-outline-primary">
+          Export CSV
+        </a>
+        <a href="/reports/impact/export/excel?<%= Object.keys(filters).map(key => key + '=' + (filters[key] ?? '')).join('&') %>"
+          class="btn btn-outline-success">
+          Export Excel
+        </a>
+      </div>
+
       <!-- ตารางแสดงผล -->
-      <table class="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Fleet Name</th>
-            <th>Staff Name</th>
-            <th>Severity</th>
-            <th>G-Force</th>
-            <th>Location</th>
-            <th>Occurred At</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (impacts.length===0) { %>
+      <div class="table-responsive mt-3">
+        <table class="table table-bordered table-striped">
+          <thead>
             <tr>
-              <td colspan="7" class="text-center">No records found.</td>
+              <th>ID</th>
+              <th>Fleet Name</th>
+              <th>Staff Name</th>
+              <th>Severity</th>
+              <th>G-Force</th>
+              <th>Location</th>
+              <th>Occurred At</th>
             </tr>
-            <% } else { %>
-              <% impacts.forEach(impact=> { %>
-                <tr>
-                  <td>
-                    <%= impact.impact_id %>
-                  </td>
-                  <td>
-                    <%= impact.fleet_name %>
-                  </td>
-                  <td>
-                    <%= impact.staff_name %>
-                  </td>
-                  <td>
-                    <%= impact.severity %>
-                  </td>
-                  <td>
-                    <%= impact.g_force %>
-                  </td>
-                  <td>
-                    <%= impact.location || '' %>
-                  </td>
-                  <td>
-                    <%= impact.occurred_at %>
-                  </td>
-                </tr>
-                <% }); %>
-                  <% } %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% if (impacts.length===0) { %>
+              <tr>
+                <td colspan="7" class="text-center">No records found.</td>
+              </tr>
+              <% } else { %>
+                <% impacts.forEach(impact=> { %>
+                  <tr>
+                    <td>
+                      <%= impact.impact_id %>
+                    </td>
+                    <td>
+                      <%= impact.fleet_name %>
+                    </td>
+                    <td>
+                      <%= impact.staff_name %>
+                    </td>
+                    <td>
+                      <%= impact.severity %>
+                    </td>
+                    <td>
+                      <%= impact.g_force %>
+                    </td>
+                    <td>
+                      <%= impact.location || '' %>
+                    </td>
+                    <td>
+                      <%= impact.occurred_at %>
+                    </td>
+                  </tr>
+                  <% }); %>
+                    <% } %>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Bootstrap 5 JS via CDN -->

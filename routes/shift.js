@@ -102,15 +102,14 @@ router.get('/', async (req, res) => {
 	}
 	const client = await pool.connect();
 	try {
-		console.log(req.query);
 		// ดึงค่ากรองจาก query string
 		let { company_id, card_uid, staff_name, fleet_name, start_date, end_date } = req.query;
 
 		// หากไม่มีการส่ง start_date หรือ end_date ให้กำหนดเป็นวันแรกและวันสุดท้ายของเดือนปัจจุบัน
 		if (!start_date || !end_date) {
 			const currentDate = new Date();
-			const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-			const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+			const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 2);
+			const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
 			if (!start_date) {
 				start_date = firstDay.toISOString().split('T')[0];
 			}
@@ -119,7 +118,6 @@ router.get('/', async (req, res) => {
 			}
 		}
 
-		console.log({start_date,end_date});
 		// สร้าง object filters
 		let filters = { company_id, card_uid, staff_name, fleet_name, start_date, end_date };
 

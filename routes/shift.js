@@ -102,6 +102,7 @@ router.get('/', async (req, res) => {
 	}
 	const client = await pool.connect();
 	try {
+		console.log(req.query);
 		// ดึงค่ากรองจาก query string
 		let { company_id, card_uid, staff_name, fleet_name, start_date, end_date } = req.query;
 

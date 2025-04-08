@@ -118,6 +118,7 @@ router.get('/', async (req, res) => {
 			}
 		}
 
+		console.log({start_date,end_date});
 		// สร้าง object filters
 		let filters = { company_id, card_uid, staff_name, fleet_name, start_date, end_date };
 

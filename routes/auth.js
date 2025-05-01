@@ -1,17 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { Pool } = require('pg');
 const crypto = require('crypto'); // สมมติใช้ scryptSync ในการ hash password
-
-// ตั้งค่าการเชื่อมต่อ PostgreSQL (ปรับค่าให้ตรงกับ DB ของคุณ)
-const pool = new Pool({
-  user: 'palm',
-  host: '203.154.32.219',
-  database: 'fm',
-  password: 'qwer1234',
-  port: 5432,
-  idleTimeoutMillis: 30000
-});
+const pool = require('../index'); // นำเข้า pool จาก index.js
 
 /* 
   GET /login

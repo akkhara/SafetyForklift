@@ -1,17 +1,9 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
-const { Pool } = require('pg');
 const crypto = require('crypto'); // ใช้ generate code หรือจะใช้วิธีอื่น
 
-const pool = new Pool({
-    user: 'palm',
-    host: '203.154.32.219',
-    database: 'fm',
-    password: 'qwer1234',
-    port: 5432,
-    idleTimeoutMillis: 30000
-  });
+const pool = require('../index'); // นำเข้า pool จาก index.js
 
 // ฟังก์ชันสำหรับ Generate customer_code ขนาด 10 ตัวอักษร
 // ตัวอย่าง: random hex 5 ไบต์ => 10 ตัวอักษร

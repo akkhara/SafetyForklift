@@ -1,18 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Pool } = require('pg');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const pool = new Pool({
-  user: 'palm',
-  host: '203.154.32.219',
-  database: 'fm',
-  password: 'qwer1234',
-  port: 5432,
-  idleTimeoutMillis: 30000
-});
+const pool = require('../index'); // นำเข้า pool จาก index.js
 
 // ตั้งค่าที่เก็บไฟล์ชั่วคราว
 const upload = multer({

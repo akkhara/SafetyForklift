@@ -82,7 +82,7 @@
 
       if (companyId) {
         // Fetch fleet data for the selected company
-        const response = await fetch(`/api/fleets?companyId=${companyId}`);
+        const response = await fetch(`map/api/fleets?companyId=${companyId}`);
         const fleets = await response.json();
 
         // Populate the fleet list

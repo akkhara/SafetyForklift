@@ -23,6 +23,8 @@ const pool = new Pool({
   idleTimeoutMillis: 30000
 });
 
+module.exports = pool;
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ตั้งค่า EJS

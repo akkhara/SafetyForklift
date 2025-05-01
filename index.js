@@ -73,10 +73,6 @@ app.use('/reports/usage', usageRoutes);
 const mapRoutes = require('./routes/map');
 app.use('/map', mapRoutes);
 
-// const mapRoutes = require('./routes/map');
-// // ใช้ Route สำหรับแผนที่
-// app.use('/map', mapRoutes);
-
 app.get('/', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login');

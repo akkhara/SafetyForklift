@@ -750,7 +750,22 @@ app.post('/getDeviceInfo', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ Status: "Error", message: "deviceID not match." });
+      // Insert a new record into the fleet table with default name 'New Device'
+      const insertResult = await client.query(`
+                INSERT INTO fleet (device_id, vehicle_name, is_registered, vehicle_status)
+                VALUES ($1, $2, false, 'inactive')
+                RETURNING id`,
+        [data.deviceID, 'New Device']
+      );
+
+      return res.status(200).json({
+        Status: "OK",
+        message: "Device not found. New device added to the database.",
+        fleetID: insertResult.rows[0].id,
+        vehicleName: 'New Device',
+        is_registered: false,
+        vehicleStatus: "inactive"
+      });
     }
 
     res.status(200).json({

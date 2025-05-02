@@ -962,6 +962,69 @@ app.post('/impact', async (req, res) => {
   }
 });
 
+app.post('/position', async (req, res) => {
+  const { device_id, latitude, longitude, timestamp } = req.body;
+
+  // ตรวจสอบว่าข้อมูลที่จำเป็นถูกส่งมาครบหรือไม่
+  if (!device_id || latitude === undefined || longitude === undefined || !timestamp) {
+    return res.status(400).json({
+      Status: "Error",
+      message: "Missing required fields (device_id, latitude, longitude, timestamp)"
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    // ตรวจสอบว่า device_id มีอยู่ในตาราง fleet หรือไม่
+    const fleetQuery = `
+      SELECT id
+      FROM fleet
+      WHERE device_id = $1 AND deleted_at IS NULL
+      LIMIT 1
+    `;
+    const fleetResult = await client.query(fleetQuery, [device_id]);
+
+    if (fleetResult.rows.length === 0) {
+      return res.status(404).json({
+        Status: "Error",
+        message: "Invalid device_id or fleet not found"
+      });
+    }
+
+    const fleet_id = fleetResult.rows[0].id;
+
+    // บันทึกค่าลงในตาราง fleet_location_history
+    const insertHistoryQuery = `
+      INSERT INTO fleet_location_history (
+        fleet_id, latitude, longitude, recorded_at, device_id
+      ) VALUES ($1, $2, $3, $4, $5)
+    `;
+    await client.query(insertHistoryQuery, [fleet_id, latitude, longitude, timestamp, device_id]);
+
+    // อัปเดตตำแหน่งล่าสุดในตาราง fleet
+    const updateFleetQuery = `
+      UPDATE fleet
+      SET latitude = $1, longitude = $2, updated_at = NOW()
+      WHERE id = $3
+    `;
+    await client.query(updateFleetQuery, [latitude, longitude, fleet_id]);
+
+    res.status(200).json({
+      Status: "OK",
+      message: "Position updated successfully"
+    });
+  } catch (error) {
+    console.error('Error updating position:', error);
+    res.status(500).json({
+      Status: "Error",
+      message: "Internal server error"
+    });
+  } finally {
+    client.release();
+  }
+});
+
 app.listen(8000, () => {
   console.log('app listening on port', 8000)
 })

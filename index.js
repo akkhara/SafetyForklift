@@ -9,6 +9,14 @@ const ExcelJS = require('exceljs');
 const path = require('path');
 const multer = require('multer');
 const session = require('express-session');
+const http = require('http');
+const { Server } = require('socket.io');
+
+// สร้าง HTTP Server
+const server = http.createServer(app);
+
+// สร้าง Socket.IO Server
+const io = new Server(server);
 
 app.use(cors());
 app.use(express.json());
@@ -962,10 +970,10 @@ app.post('/impact', async (req, res) => {
   }
 });
 
+// Broadcast ข้อมูลตำแหน่งเมื่อมีการอัปเดต
 app.post('/position', async (req, res) => {
   const { device_id, latitude, longitude, timestamp } = req.body;
 
-  // ตรวจสอบว่าข้อมูลที่จำเป็นถูกส่งมาครบหรือไม่
   if (!device_id || latitude === undefined || longitude === undefined || !timestamp) {
     return res.status(400).json({
       Status: "Error",
@@ -976,9 +984,8 @@ app.post('/position', async (req, res) => {
   const client = await pool.connect();
 
   try {
-    // ตรวจสอบว่า device_id มีอยู่ในตาราง fleet หรือไม่
     const fleetQuery = `
-      SELECT id
+      SELECT id, vehicle_name
       FROM fleet
       WHERE device_id = $1 AND deleted_at IS NULL
       LIMIT 1
@@ -993,8 +1000,8 @@ app.post('/position', async (req, res) => {
     }
 
     const fleet_id = fleetResult.rows[0].id;
+    const vehicle_name = fleetResult.rows[0].vehicle_name;
 
-    // บันทึกค่าลงในตาราง fleet_location_history
     const insertHistoryQuery = `
       INSERT INTO fleet_location_history (
         fleet_id, latitude, longitude, recorded_at, device_id
@@ -1002,13 +1009,21 @@ app.post('/position', async (req, res) => {
     `;
     await client.query(insertHistoryQuery, [fleet_id, latitude, longitude, timestamp, device_id]);
 
-    // อัปเดตตำแหน่งล่าสุดในตาราง fleet
     const updateFleetQuery = `
       UPDATE fleet
       SET latitude = $1, longitude = $2, updated_at = NOW()
       WHERE id = $3
     `;
     await client.query(updateFleetQuery, [latitude, longitude, fleet_id]);
+
+    // Broadcast ข้อมูลไปยัง client
+    io.emit('positionUpdate', {
+      id: fleet_id,
+      name: vehicle_name,
+      latitude,
+      longitude,
+      timestamp
+    });
 
     res.status(200).json({
       Status: "OK",
@@ -1025,6 +1040,17 @@ app.post('/position', async (req, res) => {
   }
 });
 
-app.listen(8000, () => {
-  console.log('app listening on port', 8000)
-})
+// เมื่อมีการเชื่อมต่อจาก client
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  // เมื่อ client ตัดการเชื่อมต่อ
+  socket.on('disconnect', () => {
+    console.log('A user disconnected');
+  });
+});
+
+// เปลี่ยนจาก app.listen เป็น server.listen
+server.listen(8000, () => {
+  console.log('app listening on port', 8000);
+});

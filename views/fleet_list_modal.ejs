@@ -82,7 +82,7 @@
                       '<%= f.make ? f.make.replace(/'/g, '\\\'') : '' %>',
                       '<%= f.model ? f.model.replace(/'/g, '\\\'') : '' %>',
                       <%= f.year ? f.year : 'null' %>,
-                      <%= f.company_id ? f.company_id : 'null' %>,
+                      <%= (f.company_id ?? 'null') %>,
                       <%= f.site_id ? f.site_id : 'null' %>,
                       <%= f.checklist_id ? f.checklist_id : 'null' %>,
                       '<%= f.vehicle_status ? f.vehicle_status.replace(/'/g, '\\\'') : '' %>',

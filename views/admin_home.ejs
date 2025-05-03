@@ -174,7 +174,7 @@
           </div>
         </div>
       </div>
-
+      <% if (userRole === 'super_admin') { %>
       <!-- กลุ่ม Card: Import (ถ้ามี) -->
       <h2 class="mt-5">Import Data</h2>
       <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
@@ -191,7 +191,7 @@
           </div>
         </div>
       </div>
-
+      <% } %>
     </div>
 
     <!-- Bootstrap 5 JS via CDN -->

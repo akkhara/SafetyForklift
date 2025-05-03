@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
       LEFT JOIN site s ON f.site_id = s.id
       LEFT JOIN checklist ch ON f.checklist_id = ch.id
       WHERE f.deleted_at IS NULL
-      ORDER BY f.id ASC
+      ORDER BY f.vehicle_name ASC
     `;
     const result = await client.query(query);
     const fleets = result.rows;

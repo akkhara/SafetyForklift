@@ -41,7 +41,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // ตั้งค่า express-session
 const sessionMiddleware = session({
-  store: new pgSession({ pool: new Pool(/*…*/)}),
+  store: new pgSession({ pool: pool}),
   secret: 'S@fetyForklift',
   resave: false,
   saveUninitialized: false

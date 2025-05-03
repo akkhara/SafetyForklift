@@ -136,9 +136,9 @@
           }
         });
 
-        // Zoom to fit all markers
+        // Zoom to fit all markers with padding
         if (bounds.isValid()) {
-          map.fitBounds(bounds);
+          map.fitBounds(bounds, { padding: [50, 50] }); // เพิ่ม padding 50px รอบขอบเขต
         }
       }
     });

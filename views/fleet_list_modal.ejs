@@ -315,21 +315,28 @@
         document.getElementById('make').value = make;
         document.getElementById('model').value = model;
         document.getElementById('year').value = (year !== 'null') ? year : '';
+
+        // ตั้งค่า Company
         if (company_id && company_id !== 'null') {
-          document.getElementById('company_id').value = company_id;
+          document.getElementById('company_id').value = company_id; // ตั้งค่า value ของ select
         } else {
-          document.getElementById('company_id').selectedIndex = 0;
+          document.getElementById('company_id').selectedIndex = 0; // เลือกเป็น None
         }
+
+        // ตั้งค่า Site
         if (site_id && site_id !== 'null') {
           document.getElementById('site_id').value = site_id;
         } else {
           document.getElementById('site_id').selectedIndex = 0;
         }
+
+        // ตั้งค่า Checklist
         if (checklist_id && checklist_id !== 'null') {
           document.getElementById('checklist_id').value = checklist_id;
         } else {
           document.getElementById('checklist_id').selectedIndex = 0;
         }
+
         document.getElementById('vehicle_status').value = vehicle_status;
         document.getElementById('device_id').value = device_id;
         document.getElementById('is_registered').checked = (is_registered === true);

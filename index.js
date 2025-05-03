@@ -56,9 +56,7 @@ app.use(sessionMiddleware);
 
 // ให้ Socket.IO ใช้ session
 io.use((socket, next) => {
-  let req = socket.request;
-  let res = req.res;
-  sessionMiddleware(req, res, next);
+  sessionMiddleware(socket.request, {}, next);
 });
 
 app.use((req, res, next) => {

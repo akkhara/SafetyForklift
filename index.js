@@ -11,6 +11,7 @@ const multer = require('multer');
 const session = require('express-session');
 const http = require('http');
 const { Server } = require('socket.io');
+const pgSession = require('connect-pg-simple')(session);
 
 // สร้าง HTTP Server
 const server = http.createServer(app);

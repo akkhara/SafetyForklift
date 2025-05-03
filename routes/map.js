@@ -8,9 +8,22 @@ router.get('/', async (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login');
   }
+
+  const user = req.session.user; // ดึงข้อมูลผู้ใช้จาก session
   const client = await pool.connect();
+
   try {
-    const companiesResult = await client.query('SELECT id, name FROM company WHERE deleted_at IS NULL');
+    let companiesQuery = 'SELECT id, name FROM company WHERE deleted_at IS NULL';
+    const params = [];
+
+    // หากผู้ใช้ไม่ใช่ super_admin ให้กรองเฉพาะบริษัทของตัวเอง
+    if (user.role !== 'super_admin') {
+      companiesQuery += ' AND id = $1';
+      params.push(user.company_id);
+    }
+
+    const companiesResult = await client.query(companiesQuery, params);
+
     res.render('map', { companies: companiesResult.rows });
   } catch (error) {
     console.error('Error fetching companies:', error);

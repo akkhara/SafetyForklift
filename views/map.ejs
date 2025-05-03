@@ -142,6 +142,16 @@
             // Extend bounds to include this marker
             bounds.extend([latitude, longitude]);
           }
+
+          // Add click event to Fleet List item
+          listItem.addEventListener('click', () => {
+            if (latitude && longitude) {
+              map.setView([latitude, longitude], 15); // Zoom to the marker with zoom level 15
+              if (markers[id]) {
+                markers[id].openPopup(); // Open the popup for the selected marker
+              }
+            }
+          });
         });
 
         // Zoom to fit all markers with padding

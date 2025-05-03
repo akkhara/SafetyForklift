@@ -61,6 +61,15 @@ io.use((socket, next) => {
   sessionMiddleware(req, res, next);
 });
 
+app.use((req, res, next) => {
+  if (req.session.user) {
+    res.locals.userRole = req.session.user.role; // ส่ง role ไปยัง View
+  } else {
+    res.locals.userRole = null;
+  }
+  next();
+});
+
 // Import routes login, logout, และ routes อื่น ๆ ที่ต้อง login
 const authRoutes = require('./routes/auth');
 app.use('/', authRoutes);

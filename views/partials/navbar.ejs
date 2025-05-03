@@ -18,22 +18,26 @@
         </li-->
 
         <!-- Management (Dropdown) -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="managementDropdown" role="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            Management
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="managementDropdown">
-            <li><a class="dropdown-item" href="/management/user">User</a></li>
-            <li><a class="dropdown-item" href="/management/staff">Staff</a></li>
-            <li><a class="dropdown-item" href="/management/card">Card</a></li>
-            <li><a class="dropdown-item" href="/management/fleet">Fleet</a></li>
-            <!--li><a class="dropdown-item" href="/management/checklist">Checklist</a></li-->
-            <li><a class="dropdown-item" href="/management/company">Company</a></li>
-            <li><a class="dropdown-item" href="/management/site">Site Location</a></li>
-            <li><a class="dropdown-item" href="/management/shift_time">Shift Time</a></li>
-          </ul>
-        </li>
+        <% if (userRole === 'super_admin' || userRole === 'customer_admin') { %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="managementDropdown" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
+              Management
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="managementDropdown">
+              <% if (userRole === 'super_admin') { %>
+                <li><a class="dropdown-item" href="/management/user">User</a></li>
+                <li><a class="dropdown-item" href="/management/staff">Staff</a></li>
+                <li><a class="dropdown-item" href="/management/fleet">Fleet</a></li>
+                <li><a class="dropdown-item" href="/management/company">Company</a></li>
+                <li><a class="dropdown-item" href="/management/site">Site Location</a></li>
+              <% } else if (userRole === 'customer_admin') { %>
+                <li><a class="dropdown-item" href="/management/user">User</a></li>
+                <li><a class="dropdown-item" href="/management/staff">Staff</a></li>
+              <% } %>
+            </ul>
+          </li>
+        <% } %>
 
         <!-- Map -->
         <li class="nav-item">

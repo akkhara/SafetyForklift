@@ -145,6 +145,7 @@
 
       // Clear the fleet list and remove all markers from the map
       fleetList.innerHTML = '';
+      markerClusterGroup.clearLayers(); // ลบหมุดทั้งหมดใน Cluster Group
       Object.values(markers).forEach(marker => map.removeLayer(marker));
       Object.keys(markers).forEach(key => delete markers[key]);
 

@@ -316,6 +316,7 @@
         document.getElementById('model').value = model;
         document.getElementById('year').value = (year !== 'null') ? year : '';
 
+        console.log('company_id:', company_id);
         // ตั้งค่า Company
         if (company_id && company_id !== 'null') {
           document.getElementById('company_id').value = company_id; // ตั้งค่า value ของ select

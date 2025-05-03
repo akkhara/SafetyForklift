@@ -28,9 +28,11 @@
               <% if (userRole === 'super_admin') { %>
                 <li><a class="dropdown-item" href="/management/user">User</a></li>
                 <li><a class="dropdown-item" href="/management/staff">Staff</a></li>
+                <li><a class="dropdown-item" href="/management/card">Card</a></li>
                 <li><a class="dropdown-item" href="/management/fleet">Fleet</a></li>
                 <li><a class="dropdown-item" href="/management/company">Company</a></li>
                 <li><a class="dropdown-item" href="/management/site">Site Location</a></li>
+                <li><a class="dropdown-item" href="/management/shift_time">Shift Time</a></li>
               <% } else if (userRole === 'customer_admin') { %>
                 <li><a class="dropdown-item" href="/management/user">User</a></li>
                 <li><a class="dropdown-item" href="/management/staff">Staff</a></li>

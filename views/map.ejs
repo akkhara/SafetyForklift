@@ -96,8 +96,8 @@
 
     // Listen for position updates
     socket.on('positionUpdate', (data) => {
-      const { id, name, latitude, longitude, timestamp, companyId } = data;
-      console.log(`Received position update for ID: ${id}, Name: ${name}, Lat: ${latitude}, Lng: ${longitude}, Time: ${timestamp}`);
+      const { id, name, latitude, longitude, timestamp, companyId, className } = data;
+      console.log(`Received position update for ID: ${id}, Name: ${name}, Lat: ${latitude}, Lng: ${longitude}, Time: ${timestamp}, Company ID: ${companyId}`, 'Company ID:', companyName);
       // Update position only if the companyId matches the selectedCompanyId
       if (companyId === selectedCompanyId) {
         // If marker already exists, update its position

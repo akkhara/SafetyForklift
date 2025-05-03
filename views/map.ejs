@@ -92,19 +92,24 @@
       popupAnchor: [0, -32] // ตำแหน่งของ Popup เมื่อเปิด
     });
 
+    let selectedCompanyId = null;
+
     // Listen for position updates
     socket.on('positionUpdate', (data) => {
-      const { id, name, latitude, longitude, timestamp } = data;
+      const { id, name, latitude, longitude, timestamp, companyId } = data;
 
-      // If marker already exists, update its position
-      if (markers[id]) {
-        markers[id].setLatLng([latitude, longitude]);
-        markers[id].bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
-      } else {
-        // Create a new marker with the custom icon if it doesn't exist
-        const marker = L.marker([latitude, longitude], { icon: forkliftIcon }).addTo(map);
-        marker.bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
-        markers[id] = marker;
+      // Update position only if the companyId matches the selectedCompanyId
+      if (companyId === selectedCompanyId) {
+        // If marker already exists, update its position
+        if (markers[id]) {
+          markers[id].setLatLng([latitude, longitude]);
+          markers[id].bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
+        } else {
+          // Create a new marker with the custom icon if it doesn't exist
+          const marker = L.marker([latitude, longitude], { icon: forkliftIcon }).addTo(map);
+          marker.bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
+          markers[id] = marker;
+        }
       }
     });
 
@@ -113,16 +118,16 @@
     const fleetList = document.getElementById('fleet-list');
 
     companySelect.addEventListener('change', async () => {
-      const companyId = companySelect.value;
+      selectedCompanyId = companySelect.value; // เก็บ companyId ที่เลือก
 
       // Clear the fleet list and remove all markers from the map
       fleetList.innerHTML = '';
       Object.values(markers).forEach(marker => map.removeLayer(marker));
       Object.keys(markers).forEach(key => delete markers[key]);
 
-      if (companyId) {
+      if (selectedCompanyId) {
         // Fetch fleet data for the selected company
-        const response = await fetch(`/map/api/fleets?companyId=${companyId}`);
+        const response = await fetch(`/map/api/fleets?companyId=${selectedCompanyId}`);
         const fleets = await response.json();
 
         // Create a bounds object to fit all markers

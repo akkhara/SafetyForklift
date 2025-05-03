@@ -26,6 +26,19 @@
       background-color: #007bff;
       color: white;
     }
+
+    .col-md-3 {
+      height: 500px; /* กำหนดความสูงให้เท่ากับแผนที่ */
+    }
+
+    #fleet-list {
+      overflow-y: auto; /* เพิ่ม scroll หากรายการยาวเกิน */
+    }
+
+    .list-group-item.active {
+      background-color: #007bff;
+      color: white;
+    }
   </style>
   <!-- Leaflet.markercluster CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -38,12 +51,12 @@
   <div class="container-fluid mt-4">
     <h1>Real-Time Map</h1>
 
-    <!-- Filter Section -->
     <div class="row">
-      <div class="col-md-3">
+      <!-- Filter Section -->
+      <div class="col-md-3 d-flex flex-column">
         <h5>Filter by Company</h5>
         <form id="filter-form">
-          <select id="company-select" class="form-select">
+          <select id="company-select" class="form-select mb-3">
             <option value="">-- Select Company --</option>
             <% companies.forEach(company => { %>
               <option value="<%= company.id %>"><%= company.name %></option>
@@ -51,13 +64,13 @@
           </select>
         </form>
 
-        <!-- Fleet List -->
-        <h5 class="mt-4">Fleet List</h5>
-        <ul id="fleet-list" class="list-group">
+        <h5>Fleet List</h5>
+        <ul id="fleet-list" class="list-group flex-grow-1">
           <!-- Fleet items will be dynamically added here -->
         </ul>
       </div>
 
+      <!-- Map Section -->
       <div class="col-md-9">
         <div id="map"></div>
       </div>

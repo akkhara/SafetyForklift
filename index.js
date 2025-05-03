@@ -42,7 +42,11 @@ app.set('views', path.join(__dirname, 'views'));
 
 // ตั้งค่า express-session
 const sessionMiddleware = session({
-  store: new pgSession({ pool: pool}),
+  store: new pgSession({
+    pool,                       // your pg.Pool instance
+    tableName: 'session',       // ชื่อตาราง
+    createTableIfMissing: true  // ให้สร้างตารางถ้าไม่มี
+  }),
   secret: 'S@fetyForklift',
   resave: false,
   saveUninitialized: false

@@ -1088,10 +1088,11 @@ io.on('connection', socket => {
   if (user.role === 'super_admin') {
     // Super Admin เข้าร่วม room ที่สามารถดูข้อมูลทั้งหมด
     socket.join('super_admin');
+    console.log('Super Admin connected:', user.username);
   } else {
     // Customer Admin หรือบทบาทอื่น
     socket.join(`company_${user.company_id}`); // เข้าร่วม room ของบริษัท
-
+    console.log('Company Admin connected:', user.username);
     // เข้าร่วม room ของ fleet ที่อนุญาต
     (user.fleet_ids || []).forEach(fleetId => {
       socket.join(`fleet_${fleetId}`);

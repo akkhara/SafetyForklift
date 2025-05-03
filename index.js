@@ -40,12 +40,21 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // ตั้งค่า express-session
-app.use(session({
-  secret: 'S@fetyForklift',  // เปลี่ยนให้เป็นคีย์ที่ปลอดภัย
+const sessionMiddleware = session({
+  store: new pgSession({ pool: new Pool(/*…*/)}),
+  secret: 'S@fetyForklift',
   resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 60000 * 60 } // session ใช้งาน 1 ชั่วโมง
-}));
+  saveUninitialized: false
+});
+
+app.use(sessionMiddleware);
+
+// ให้ Socket.IO ใช้ session
+io.use((socket, next) => {
+  let req = socket.request;
+  let res = req.res;
+  sessionMiddleware(req, res, next);
+});
 
 // Import routes login, logout, และ routes อื่น ๆ ที่ต้อง login
 const authRoutes = require('./routes/auth');
@@ -1019,8 +1028,8 @@ app.post('/position', async (req, res) => {
     `;
     await client.query(updateFleetQuery, [latitude, longitude, fleet_id]);
 
-    // Broadcast ข้อมูลไปยัง client
-    io.emit('positionUpdate', {
+    // สร้าง payload สำหรับ broadcast
+    const payload = {
       id: fleet_id,
       name: vehicle_name,
       latitude,
@@ -1028,7 +1037,16 @@ app.post('/position', async (req, res) => {
       timestamp,
       companyId: company_id,
       companyName: company_name
-    });
+    };
+
+    // Broadcast ไปยัง room ของ super_admin
+    io.to('super_admin').emit('positionUpdate', payload);
+
+    // Broadcast ไปยัง room ของบริษัท
+    io.to(`company_${company_id}`).emit('positionUpdate', payload);
+
+    // Broadcast ไปยัง room ของ fleet
+    io.to(`fleet_${fleet_id}`).emit('positionUpdate', payload);
 
     res.status(200).json({
       Status: "OK",
@@ -1046,13 +1064,25 @@ app.post('/position', async (req, res) => {
 });
 
 // เมื่อมีการเชื่อมต่อจาก client
-io.on('connection', (socket) => {
-  console.log('A user connected');
+io.on('connection', socket => {
+  const user = socket.request.session.user;
 
-  // เมื่อ client ตัดการเชื่อมต่อ
-  socket.on('disconnect', () => {
-    console.log('A user disconnected');
-  });
+  if (!user) {
+    return socket.disconnect(); // ตัดการเชื่อมต่อหากไม่มี session
+  }
+
+  if (user.role === 'super_admin') {
+    // Super Admin เข้าร่วม room ที่สามารถดูข้อมูลทั้งหมด
+    socket.join('super_admin');
+  } else {
+    // Customer Admin หรือบทบาทอื่น
+    socket.join(`company_${user.company_id}`); // เข้าร่วม room ของบริษัท
+
+    // เข้าร่วม room ของ fleet ที่อนุญาต
+    (user.fleet_ids || []).forEach(fleetId => {
+      socket.join(`fleet_${fleetId}`);
+    });
+  }
 });
 
 // เปลี่ยนจาก app.listen เป็น server.listen

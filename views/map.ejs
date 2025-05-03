@@ -102,21 +102,44 @@
     companySelect.addEventListener('change', async () => {
       const companyId = companySelect.value;
 
-      // Clear the fleet list
+      // Clear the fleet list and remove all markers from the map
       fleetList.innerHTML = '';
+      Object.values(markers).forEach(marker => map.removeLayer(marker));
+      Object.keys(markers).forEach(key => delete markers[key]);
 
       if (companyId) {
         // Fetch fleet data for the selected company
         const response = await fetch(`/map/api/fleets?companyId=${companyId}`);
         const fleets = await response.json();
 
-        // Populate the fleet list
+        // Create a bounds object to fit all markers
+        const bounds = L.latLngBounds();
+
+        // Populate the fleet list and add markers to the map
         fleets.forEach(fleet => {
+          const { id, vehicle_name, latitude, longitude } = fleet;
+
+          // Add to Fleet List
           const listItem = document.createElement('li');
           listItem.className = 'list-group-item';
-          listItem.textContent = fleet.vehicle_name;
+          listItem.textContent = vehicle_name;
           fleetList.appendChild(listItem);
+
+          // Add marker to the map
+          if (latitude && longitude) {
+            const marker = L.marker([latitude, longitude]).addTo(map);
+            marker.bindPopup(`<b>${vehicle_name}</b><br>Lat: ${latitude}, Lng: ${longitude}`).openPopup();
+            markers[id] = marker;
+
+            // Extend bounds to include this marker
+            bounds.extend([latitude, longitude]);
+          }
         });
+
+        // Zoom to fit all markers
+        if (bounds.isValid()) {
+          map.fitBounds(bounds);
+        }
       }
     });
   </script>

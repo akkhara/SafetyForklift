@@ -20,20 +20,41 @@ router.get('/', async (req, res) => {
   }
 });
 
-// API สำหรับดึงข้อมูล Fleet ตามบริษัท
+// API สำหรับดึงข้อมูล Fleet ตามบริษัท พร้อมตำแหน่งล่าสุด
 router.get('/api/fleets', async (req, res) => {
   const { companyId } = req.query;
+
+  if (!companyId) {
+    return res.status(400).json({
+      Status: "Error",
+      message: "Missing required parameter: companyId"
+    });
+  }
+
   const client = await pool.connect();
 
   try {
     const fleetsResult = await client.query(
-      'SELECT id, vehicle_name FROM fleet WHERE company_id = $1 AND deleted_at IS NULL',
+      `
+      SELECT 
+        id, 
+        vehicle_name, 
+        latitude, 
+        longitude 
+      FROM fleet 
+      WHERE company_id = $1 
+        AND deleted_at IS NULL
+      `,
       [companyId]
     );
+
     res.json(fleetsResult.rows);
   } catch (error) {
     console.error('Error fetching fleets:', error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({
+      Status: "Error",
+      message: "Internal Server Error"
+    });
   } finally {
     client.release();
   }

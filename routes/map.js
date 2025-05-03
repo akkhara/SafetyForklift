@@ -57,6 +57,7 @@ router.get('/api/fleets', async (req, res) => {
       FROM fleet 
       WHERE company_id = $1 
         AND deleted_at IS NULL
+      ORDER BY vehicle_name ASC
       `,
       [companyId]
     );

@@ -316,16 +316,15 @@
         document.getElementById('model').value = model;
         document.getElementById('year').value = (year !== 'null') ? year : '';
 
-        console.log('company_id:', company_id);
         // ตั้งค่า Company
-        if (company_id && company_id !== 'null') {
+        if (company_id !== 'null') {
           document.getElementById('company_id').value = company_id; // ตั้งค่า value ของ select
         } else {
           document.getElementById('company_id').selectedIndex = 0; // เลือกเป็น None
         }
 
         // ตั้งค่า Site
-        if (site_id && site_id !== 'null') {
+        if (site_id !== 'null') {
           document.getElementById('site_id').value = site_id;
         } else {
           document.getElementById('site_id').selectedIndex = 0;

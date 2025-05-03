@@ -64,7 +64,7 @@ router.get('/', async (req, res) => {
     const sites = siteResult.rows;
     const checklists = checklistResult.rows;
 
-    console.log('Companies:', companies);
+    console.log('fleets:', fleets);
 
     // render หน้า fleet_list_modal.ejs
     res.render('fleet_list_modal', { fleets, companies, sites, checklists });

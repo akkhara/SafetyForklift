@@ -21,6 +21,11 @@
       max-height: 500px;
       overflow-y: auto;
     }
+
+    .list-group-item.active {
+      background-color: #007bff;
+      color: white;
+    }
   </style>
 </head>
 
@@ -146,10 +151,17 @@
           // Add click event to Fleet List item
           listItem.addEventListener('click', () => {
             if (latitude && longitude) {
+              // Zoom to the marker
               map.setView([latitude, longitude], 15); // Zoom to the marker with zoom level 15
               if (markers[id]) {
                 markers[id].openPopup(); // Open the popup for the selected marker
               }
+
+              // Highlight the selected item
+              document.querySelectorAll('.list-group-item').forEach(item => {
+                item.classList.remove('active'); // Remove active class from all items
+              });
+              listItem.classList.add('active'); // Add active class to the clicked item
             }
           });
         });

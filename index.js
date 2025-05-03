@@ -985,9 +985,10 @@ app.post('/position', async (req, res) => {
 
   try {
     const fleetQuery = `
-      SELECT id, vehicle_name
-      FROM fleet
-      WHERE device_id = $1 AND deleted_at IS NULL
+      SELECT f.id AS fleet_id, f.vehicle_name, f.company_id, c.name AS company_name
+      FROM fleet f
+      LEFT JOIN company c ON f.company_id = c.id
+      WHERE f.device_id = $1 AND f.deleted_at IS NULL
       LIMIT 1
     `;
     const fleetResult = await client.query(fleetQuery, [device_id]);
@@ -999,8 +1000,10 @@ app.post('/position', async (req, res) => {
       });
     }
 
-    const fleet_id = fleetResult.rows[0].id;
+    const fleet_id = fleetResult.rows[0].fleet_id;
     const vehicle_name = fleetResult.rows[0].vehicle_name;
+    const company_id = fleetResult.rows[0].company_id;
+    const company_name = fleetResult.rows[0].company_name;
 
     const insertHistoryQuery = `
       INSERT INTO fleet_location_history (
@@ -1022,7 +1025,9 @@ app.post('/position', async (req, res) => {
       name: vehicle_name,
       latitude,
       longitude,
-      timestamp
+      timestamp,
+      companyId: company_id,
+      companyName: company_name
     });
 
     res.status(200).json({

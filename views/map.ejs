@@ -79,6 +79,14 @@
     // Store markers by fleet ID
     const markers = {};
 
+    // สร้าง Custom Icon สำหรับ Forklift
+    const forkliftIcon = L.icon({
+      iconUrl: '/images/forklift-icon.png', // Path ไปยังรูป Forklift
+      iconSize: [32, 32], // ขนาดของไอคอน (กว้าง x สูง)
+      iconAnchor: [16, 32], // จุดยึดของไอคอน (ตรงกลางด้านล่าง)
+      popupAnchor: [0, -32] // ตำแหน่งของ Popup เมื่อเปิด
+    });
+
     // Listen for position updates
     socket.on('positionUpdate', (data) => {
       const { id, name, latitude, longitude, timestamp } = data;
@@ -88,8 +96,8 @@
         markers[id].setLatLng([latitude, longitude]);
         markers[id].bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
       } else {
-        // Create a new marker if it doesn't exist
-        const marker = L.marker([latitude, longitude]).addTo(map);
+        // Create a new marker with the custom icon if it doesn't exist
+        const marker = L.marker([latitude, longitude], { icon: forkliftIcon }).addTo(map);
         marker.bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
         markers[id] = marker;
       }
@@ -127,7 +135,7 @@
 
           // Add marker to the map
           if (latitude && longitude) {
-            const marker = L.marker([latitude, longitude]).addTo(map);
+            const marker = L.marker([latitude, longitude], { icon: forkliftIcon }).addTo(map);
             marker.bindPopup(`<b>${vehicle_name}</b><br>Lat: ${latitude}, Lng: ${longitude}`).openPopup();
             markers[id] = marker;
 

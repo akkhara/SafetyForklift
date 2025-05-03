@@ -28,7 +28,7 @@
   <!-- Include Partial Navbar -->
   <%- include('partials/navbar') %>
   <div class="container-fluid mt-4">
-    <h1>Map</h1>
+    <h1>Real-Time Map</h1>
 
     <!-- Filter Section -->
     <div class="row">
@@ -60,6 +60,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Socket.IO CDN -->
+  <script src="/socket.io/socket.io.js"></script>
+
   <script>
     // Initialize the map
     const map = L.map('map').setView([13.736717, 100.523186], 10); // Default location: Bangkok
@@ -69,6 +72,28 @@
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
+
+    // Initialize Socket.IO
+    const socket = io();
+
+    // Store markers by fleet ID
+    const markers = {};
+
+    // Listen for position updates
+    socket.on('positionUpdate', (data) => {
+      const { id, name, latitude, longitude, timestamp } = data;
+
+      // If marker already exists, update its position
+      if (markers[id]) {
+        markers[id].setLatLng([latitude, longitude]);
+        markers[id].bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
+      } else {
+        // Create a new marker if it doesn't exist
+        const marker = L.marker([latitude, longitude]).addTo(map);
+        marker.bindPopup(`<b>${name}</b><br>Lat: ${latitude}, Lng: ${longitude}<br>Time: ${timestamp}`).openPopup();
+        markers[id] = marker;
+      }
+    });
 
     // Handle company selection
     const companySelect = document.getElementById('company-select');
@@ -82,7 +107,7 @@
 
       if (companyId) {
         // Fetch fleet data for the selected company
-        const response = await fetch(`map/api/fleets?companyId=${companyId}`);
+        const response = await fetch(`/map/api/fleets?companyId=${companyId}`);
         const fleets = await response.json();
 
         // Populate the fleet list

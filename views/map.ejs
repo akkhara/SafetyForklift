@@ -27,6 +27,9 @@
       color: white;
     }
   </style>
+  <!-- Leaflet.markercluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 </head>
 
 <body>
@@ -65,6 +68,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Leaflet.markercluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
   <!-- Socket.IO CDN -->
   <script src="/socket.io/socket.io.js"></script>
 
@@ -77,6 +83,10 @@
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
+
+    // สร้าง Cluster Group
+    const markerClusterGroup = L.markerClusterGroup();
+    map.addLayer(markerClusterGroup);
 
     // Initialize Socket.IO
     const socket = io();
@@ -143,10 +153,11 @@
           listItem.textContent = vehicle_name;
           fleetList.appendChild(listItem);
 
-          // Add marker to the map
+          // Add marker to the cluster group
           if (latitude && longitude) {
-            const marker = L.marker([latitude, longitude], { icon: forkliftIcon }).addTo(map);
+            const marker = L.marker([latitude, longitude], { icon: forkliftIcon });
             marker.bindPopup(`<b>${vehicle_name}</b><br>Lat: ${latitude}, Lng: ${longitude}`).openPopup();
+            markerClusterGroup.addLayer(marker); // เพิ่มหมุดลงใน Cluster Group
             markers[id] = marker;
 
             // Extend bounds to include this marker

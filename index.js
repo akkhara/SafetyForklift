@@ -997,6 +997,8 @@ app.post('/impact', async (req, res) => {
 app.post('/position', async (req, res) => {
   const { device_id, latitude, longitude, timestamp } = req.body;
 
+  console.log({device_id, latitude, longitude, timestamp});
+
   if (!device_id || latitude === undefined || longitude === undefined || !timestamp) {
     return res.status(400).json({
       Status: "Error",

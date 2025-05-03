@@ -1053,6 +1053,8 @@ app.post('/position', async (req, res) => {
       companyName: company_name
     };
 
+    console.log('Broadcasting position update:', payload);
+
     // Broadcast ไปยัง room ของ super_admin
     io.to('super_admin').emit('positionUpdate', payload);
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp'); // เพิ่มการนำเข้า Sharp
 
 const pool = require('../index'); // นำเข้า pool จาก index.js
 
@@ -160,10 +161,13 @@ router.post('/add', upload.single('image'), async (req, res) => {
 
   const client = await pool.connect();
   try {
-    // เตรียม buffer สำหรับเก็บรูป (bytea)
     let imageBuffer = null;
+
+    // Resize รูปภาพถ้ามีการอัปโหลด
     if (req.file) {
-      imageBuffer = fs.readFileSync(req.file.path);
+      imageBuffer = await sharp(req.file.path)
+        .resize({ width: 500, height: 500, fit: 'inside' }) // Resize โดยรักษาอัตราส่วน
+        .toBuffer();
     }
 
     const insertQuery = `
@@ -259,8 +263,11 @@ router.post('/edit/:id', upload.single('image'), async (req, res) => {
     let queryParams;
     
     if (req.file) {
-      // ถ้ามีการอัปโหลดรูปใหม่ ให้อ่านไฟล์และอัปเดตคอลัมน์ image ด้วย
-      const imageBuffer = fs.readFileSync(req.file.path);
+      // Resize รูปภาพถ้ามีการอัปโหลด
+      const imageBuffer = await sharp(req.file.path)
+        .resize({ width: 500, height: 500, fit: 'inside' }) // Resize โดยรักษาอัตราส่วน
+        .toBuffer();
+
       updateQuery = `
         UPDATE staff
         SET

@@ -9,12 +9,14 @@ const pool = require('../index'); // ดึง pool จาก index.js
 const upload = multer({ dest: 'uploads/' });
 
 // ฟังก์ชันแปลง UID เป็น Hex Little-Endian
-function toLEHex(uid) {
-  return uid
-    .match(/.{1,2}/g)
-    .reverse()
-    .join('')
-    .toUpperCase();
+function decToLEHex(decStr) {
+  let bn = BigInt(decStr);
+  const bytes = [];
+  while (bn > 0n) {
+    bytes.push(Number(bn & 0xFFn));
+    bn >>= 8n;
+  }
+  return Buffer.from(bytes).toString('hex').toUpperCase();
 }
 
 // GET /admin/import
@@ -96,7 +98,7 @@ router.post('/', upload.single('importFile'), async (req, res, next) => {
       }
 
       // 2. แปลง UID เป็น hex little-endian
-      const uidHex = toLEHex(rawUid);
+      const uidHex = decToLEHex(rawUid);
 
       // 3. หา หรือ สร้าง card
       const cardQ = await client.query(

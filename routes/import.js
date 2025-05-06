@@ -61,12 +61,11 @@ router.post('/', upload.single('importFile'), async (req, res, next) => {
     await client.query('BEGIN');
 
     const results = [];
-    console.log(rows[0]);
     for (const row of rows) {
       const name = row.ThaiName?.trim();
       const englishName = row.EnglishName?.trim();
       const jobTitle = row.JobTitle?.trim();
-      const companyCode = row.ID?.trim();
+      const companyCode = row.ID;
       const department = row.Section?.trim();
       const rawUid = row.ChonburiForklift;
 

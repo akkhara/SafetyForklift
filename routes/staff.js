@@ -35,6 +35,7 @@ router.get('/', async (req, res) => {
       SELECT
         s.id AS staff_id,
         s.name AS staff_name,
+        s.english_name,
         s.job_title,
         s.phone_no,
         s.email,
@@ -148,6 +149,7 @@ router.get('/', async (req, res) => {
 router.post('/add', upload.single('image'), async (req, res) => {
   const {
     name,
+    english_name, // รับค่าจากฟอร์ม
     job_title,
     company_id,
     address,
@@ -173,6 +175,7 @@ router.post('/add', upload.single('image'), async (req, res) => {
     const insertQuery = `
       INSERT INTO staff (
         name,
+        english_name, -- เพิ่มคอลัมน์นี้
         job_title,
         company_id,
         address,
@@ -186,11 +189,12 @@ router.post('/add', upload.single('image'), async (req, res) => {
         created_at,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
       RETURNING id
     `;
     const result = await client.query(insertQuery, [
       name,
+      english_name || null, // บันทึกค่า English Name
       job_title,
       company_id,
       address,
@@ -246,6 +250,7 @@ router.post('/edit/:id', upload.single('image'), async (req, res) => {
   const staffId = req.params.id;
   const {
     name,
+    english_name, // รับค่าจากฟอร์ม
     job_title,
     company_id,
     address,
@@ -259,106 +264,38 @@ router.post('/edit/:id', upload.single('image'), async (req, res) => {
 
   const client = await pool.connect();
   try {
-    let updateQuery;
-    let queryParams;
-    
-    if (req.file) {
-      // Resize รูปภาพถ้ามีการอัปโหลด
-      const imageBuffer = await sharp(req.file.path)
-        .resize({ width: 500, height: 500, fit: 'inside' }) // Resize โดยรักษาอัตราส่วน
-        .toBuffer();
-
-      updateQuery = `
-        UPDATE staff
-        SET
-          name = $1,
-          job_title = $2,
-          company_id = $3,
-          address = $4,
-          phone_no = $5,
-          email = $6,
-          site_id = $7,
-          shift_time_id = $8,
-          department = $9,
-          company_code = $10,
-          image = $11,
-          updated_at = NOW()
-        WHERE id = $12
-          AND deleted_at IS NULL
-      `;
-      queryParams = [
-        name,
-        job_title,
-        company_id,
-        address,
-        phone_no,
-        email,
-        site_id || null,
-        shift_time_id || null,
-        department,
-        company_code,
-        imageBuffer,
-        staffId
-      ];
-    } else {
-      // ถ้าไม่มีการอัปโหลดรูปใหม่ ไม่อัปเดตคอลัมน์ image
-      updateQuery = `
-        UPDATE staff
-        SET
-          name = $1,
-          job_title = $2,
-          company_id = $3,
-          address = $4,
-          phone_no = $5,
-          email = $6,
-          site_id = $7,
-          shift_time_id = $8,
-          department = $9,
-          company_code = $10,
-          updated_at = NOW()
-        WHERE id = $11
-          AND deleted_at IS NULL
-      `;
-      queryParams = [
-        name,
-        job_title,
-        company_id,
-        address,
-        phone_no,
-        email,
-        site_id || null,
-        shift_time_id || null,
-        department,
-        company_code,
-        staffId
-      ];
-    }
-    
-    await client.query(updateQuery, queryParams);
-
-    // ลบไฟล์ temp ถ้ามี
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
-
-    // บันทึกข้อมูลการใช้งาน (Usage Log) สำหรับการแก้ไข Staff
-    const usageLogQuery = `
-      INSERT INTO usage_log (
-        user_id,
-        event_type,
-        event_description,
-        ip_address,
-        user_agent,
-        created_at
-      )
-      VALUES ($1, $2, $3, $4, $5, NOW())
+    const updateQuery = `
+      UPDATE staff
+      SET
+        name = $1,
+        english_name = $2, -- เพิ่มคอลัมน์นี้
+        job_title = $3,
+        company_id = $4,
+        address = $5,
+        phone_no = $6,
+        email = $7,
+        site_id = $8,
+        shift_time_id = $9,
+        department = $10,
+        company_code = $11,
+        image = $12,
+        updated_at = NOW()
+      WHERE id = $13
     `;
-    await client.query(usageLogQuery, [
-      req.session.user ? req.session.user.id : null,
-      'edit_staff',
-      `User edited staff with ID ${staffId}`,
-      req.ip,
-      req.headers['user-agent'] || ''
+    await client.query(updateQuery, [
+      name,
+      english_name || null, // บันทึกค่า English Name
+      job_title,
+      company_id,
+      address,
+      phone_no,
+      email,
+      site_id || null,
+      shift_time_id || null,
+      department,
+      company_code,
+      req.file ? req.file.buffer : null,
+      staffId
     ]);
 
     res.redirect('/management/staff');

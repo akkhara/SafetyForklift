@@ -30,6 +30,7 @@
           <tr>
             <th>ID</th>
             <th>Name</th>
+            <th>English Name</th>
             <th>Job Title</th>
             <th>Phone</th>
             <th>Email</th>
@@ -51,6 +52,7 @@
               <tr>
                 <td><%= staff.staff_id %></td>
                 <td><%= staff.staff_name %></td>
+                <td><%= staff.english_name || '' %></td>
                 <td><%= staff.job_title || '' %></td>
                 <td><%= staff.phone_no || '' %></td>
                 <td><%= staff.email || '' %></td>
@@ -103,6 +105,11 @@
               <div class="mb-3">
                 <label for="name" class="form-label">Name:</label>
                 <input type="text" class="form-control" id="name" name="name" required />
+              </div>
+
+              <div class="mb-3">
+                <label for="english_name" class="form-label">English Name:</label>
+                <input type="text" class="form-control" id="english_name" name="english_name" />
               </div>
 
               <div class="mb-3">
@@ -199,6 +206,7 @@
 
         document.getElementById('staffId').value = '';
         document.getElementById('name').value = '';
+        document.getElementById('english_name').value = ''; // เคลียร์ค่า English Name
         document.getElementById('job_title').value = '';
         document.getElementById('department').value = '';
         document.getElementById('company_code').value = ''; // เคลียร์ค่า employee code
@@ -250,6 +258,7 @@
         }
         document.getElementById('department').value = department;
         document.getElementById('company_code').value = company_code; // แสดง employee code
+        document.getElementById('english_name').value = english_name; // ตั้งค่า English Name
 
         // แสดงรูปภาพเดิม
         const imgContainer = document.getElementById('imagePreviewContainer');

@@ -1,10 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const fs = require('fs');
+const xlsx = require('xlsx'); // เพิ่มการ import ไลบรารี xlsx
 const pool = require('../index'); // ดึง pool จาก index.js
 
 // ตั้งค่า Multer สำหรับอัปโหลดไฟล์
 const upload = multer({ dest: 'uploads/' });
+
+// ฟังก์ชันแปลง UID เป็น Hex Little-Endian
+function toLEHex(uid) {
+  return uid
+    .match(/.{1,2}/g)
+    .reverse()
+    .join('')
+    .toUpperCase();
+}
 
 // GET /admin/import
 router.get('/', async (req, res) => {
@@ -13,7 +24,6 @@ router.get('/', async (req, res) => {
   }
   const client = await pool.connect();
   try {
-    // ดึงข้อมูลบริษัทที่ยังไม่ถูกลบ (deleted_at IS NULL)
     const companyQuery = `
       SELECT id, name, customer_code
       FROM company
@@ -22,7 +32,6 @@ router.get('/', async (req, res) => {
     `;
     const result = await client.query(companyQuery);
     const companies = result.rows;
-    // ส่งตัวแปร companies ไปยัง view admin_import.ejs
     res.render('admin_import', { companies });
   } catch (error) {
     console.error("Error fetching companies:", error);
@@ -33,13 +42,16 @@ router.get('/', async (req, res) => {
 });
 
 // POST /admin/import
-router.post('/', upload.single('importFile'), async (req, res) => {
+router.post('/', upload.single('importFile'), async (req, res, next) => {
   const companyId = parseInt(req.body.company_id, 10);
   if (!companyId) {
     return res.status(400).json({ error: 'company_id is required' });
   }
 
-  // อ่านไฟล์
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
   const workbook = xlsx.readFile(req.file.path);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = xlsx.utils.sheet_to_json(sheet, { defval: null });
@@ -75,7 +87,7 @@ router.post('/', upload.single('importFile'), async (req, res) => {
       } else {
         const insertStaff = await client.query(
           `INSERT INTO public.staff
-             (name, english_name, job_title, company_id, department,company_code, created_at)
+             (name, english_name, job_title, company_id, department, company_code, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, now())
              RETURNING id`,
           [name, englishName, jobTitle, companyId, department, companyCode]
@@ -122,6 +134,11 @@ router.post('/', upload.single('importFile'), async (req, res) => {
     next(err);
   } finally {
     client.release();
+
+    // ลบไฟล์ชั่วคราว
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 });
 

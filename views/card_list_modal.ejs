@@ -64,10 +64,10 @@
         <td><%= cd.card_id %></td>
         <td>
           <div>
-            <strong><%= cd.uid || '' %></strong> <!-- HEX -->
+            <strong><%= leHexToBeHex(cd.uid || '') %></strong> <!-- Big-Endian HEX -->
           </div>
           <div style="font-size: 0.85em; color: gray;">
-            <%= parseInt(cd.uid, 16) || '' %> <!-- DEC -->
+            <%= BigInt('0x' + leHexToBeHex(cd.uid || '')).toString() || '' %> <!-- DEC -->
           </div>
         </td>
         <td><%= cd.issue_date %></td>
@@ -195,6 +195,12 @@
 				document.getElementById('issue_date').value = issueDate;
 				document.getElementById('status').value = status;
 				document.getElementById('uid').value = uid;
+			}
+
+			function leHexToBeHex(leHex) {
+				if (!leHex) return '';
+				const bytes = leHex.match(/.{1,2}/g);
+				return bytes.reverse().join('').toUpperCase();
 			}
 		</script>
 </body>

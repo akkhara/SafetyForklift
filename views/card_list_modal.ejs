@@ -31,7 +31,11 @@
 <body>
 	<!-- เรียกใช้ Partial Navbar -->
 	<%- include('partials/navbar') %>
-
+	<% function leHexToBeHex(leHex) { %>
+		<% if (!leHex) return ''; %>
+		<% const bytes = leHex.match(/.{1,2}/g); %>
+		<% return bytes.reverse().join('').toUpperCase(); %>
+	  <% } %>
 		<div class="container-fluid mt-4">
 			<h1>Card Management</h1>
 

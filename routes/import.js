@@ -130,10 +130,11 @@ router.post('/', upload.single('importFile'), async (req, res, next) => {
     }
 
     await client.query('COMMIT');
-    res.json({ success: true, processed: results.length, details: results });
+    res.render('admin_import', { companies: [], message: 'Import completed successfully!', messageType: 'success' });
   } catch (err) {
     await client.query('ROLLBACK');
-    next(err);
+    console.error('Error during import:', err);
+    res.render('admin_import', { companies: [], message: 'Error during import process', messageType: 'error' });
   } finally {
     client.release();
 

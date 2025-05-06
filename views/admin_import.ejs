@@ -18,6 +18,15 @@
 
     <div class="container-fluid mt-4">
       <h1>Import Data</h1>
+
+      <!-- แสดงข้อความแจ้งเตือน -->
+      <% if (typeof message !== 'undefined') { %>
+        <div class="alert alert-<%= messageType === 'success' ? 'success' : 'danger' %> alert-dismissible fade show" role="alert">
+          <%= message %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
       <form method="POST" action="/admin/import" enctype="multipart/form-data" class="row g-3">
         <!-- Dropdown สำหรับเลือกบริษัท -->
         <div class="col-md-6">

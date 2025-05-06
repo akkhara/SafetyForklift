@@ -66,7 +66,7 @@
                   <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#staffModal" onclick="openEditStaffModal(
                       <%= staff.staff_id %>,
                       '<%= staff.staff_name.replace(/'/g, '\\\'') %>',
-                      '<%= staff.english_name.replace(/'/g, '\\\'') %>',
+                      '<%= staff.english_name ? staff.english_name.replace(/'/g, '\\\'') : '' %>',
                       '<%= staff.job_title ? staff.job_title.replace(/'/g, '\\\'') : '' %>',
                       <%= staff.company_id %>,
                       '<%= staff.address ? staff.address.replace(/'/g, '\\\'') : '' %>',

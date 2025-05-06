@@ -68,7 +68,7 @@
         <td><%= cd.card_id %></td>
         <td>
           <div>
-            <strong><%= leHexToBeHex(cd.uid || '') %></strong> <!-- Big-Endian HEX -->
+            <strong><%= (cd.uid || '') %></strong> <!-- Big-Endian HEX -->
           </div>
           <div style="font-size: 0.85em; color: gray;">
             <%= BigInt('0x' + leHexToBeHex(cd.uid || '')).toString() || '' %> <!-- DEC -->

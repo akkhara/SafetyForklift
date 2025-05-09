@@ -132,7 +132,7 @@
         </div>
         <% } %>
         <!-- Card สำหรับแสดงแผนที่ -->
-        <% if (typeof canViewMap !== 'undefined' && canViewMap) { %>
+        <% if (userPermission.view_map) { %>
         <div class="col">
           <div class="card card-hover">
             <div class="card-body">

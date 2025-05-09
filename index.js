@@ -887,7 +887,7 @@ app.get('/admin', (req, res) => {
   const canManageUsers = user.create_staff;
   const canViewMap = user.view_map === true;
 
-  res.render('admin_home', { canManageUsers, canViewMap });
+  res.render('admin_home');
 });
 
 // API สำหรับรับข้อมูล impact

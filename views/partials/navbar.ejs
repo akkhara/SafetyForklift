@@ -30,9 +30,8 @@
                 <li><a class="dropdown-item" href="/management/shift_time">Shift Time</a></li>
               <% } else if (userRole === 'customer_admin') { %>
                 <% if (userPermission.create_staff) { %>
-                <li><a class="dropdown-item" href="/management/user">User</a></li>
-                <% } %>
                 <li><a class="dropdown-item" href="/management/staff">Staff</a></li>
+                <% } %>
               <% } %>
             </ul>
           </li>

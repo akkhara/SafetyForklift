@@ -878,7 +878,14 @@ app.get('/admin', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login');
   }
-  res.render('admin_home');
+  
+  const user = req.session.user;
+
+  // ตรวจสอบสิทธิ์ (ตัวอย่าง: user.role หรือ user.permissions)
+  const canManageUsers = user.create_staff;
+  const canViewMap = user.view_map;
+
+  res.render('admin_home', { canManageUsers, canViewMap });
 });
 
 // API สำหรับรับข้อมูล impact

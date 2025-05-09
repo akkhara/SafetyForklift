@@ -153,11 +153,34 @@ router.post('/edit/:id', async (req, res) => {
 
   const client = await pool.connect();
   try {
+    // ตรวจสอบว่า company_id มีอยู่ในตาราง company หรือไม่ เพื่อดึง customer_code
+    const companyQuery = `
+      SELECT customer_code
+      FROM company
+      WHERE id = $1
+        AND deleted_at IS NULL
+    `;
+    const companyResult = await client.query(companyQuery, [company_id]);
+    if (companyResult.rows.length === 0) {
+      return res.status(400).json({
+        Status: "Error",
+        message: "Invalid customer code or company not found"
+      });
+    }
+    const customer_code = companyResult.rows[0].customer_code;
+
+    // เข้ารหัสรหัสผ่านใหม่ (ถ้ามีการส่ง password มา)
+    let hashedPassword = null;
+    if (password && password.trim() !== '') {
+      hashedPassword = crypto.scryptSync(password, customer_code, 64).toString('hex');
+    }
+
+    // อัปเดตข้อมูลผู้ใช้
     const updateQuery = `
       UPDATE users
       SET
         username = $1,
-        password = $2,
+        ${hashedPassword ? 'password = $2,' : ''} -- อัปเดตรหัสผ่านเฉพาะเมื่อมีการส่งมา
         role = $3,
         company_id = $4,
         view_map = $5,
@@ -166,15 +189,17 @@ router.post('/edit/:id', async (req, res) => {
       WHERE id = $7
         AND deleted_at IS NULL
     `;
-    await client.query(updateQuery, [
+    const queryParams = [
       username,
-      password,  // ในระบบจริงควรทำการ Hash ก่อนอัปเดต
+      ...(hashedPassword ? [hashedPassword] : []), // เพิ่ม hashedPassword ถ้ามี
       role,
       company_id,
       view_map === 'on',
       create_staff === 'on',
       userId
-    ]);
+    ];
+
+    await client.query(updateQuery, queryParams);
 
     // บันทึกข้อมูลการใช้งาน (Usage Log) สำหรับการแก้ไข user
     const usageLogQuery = `

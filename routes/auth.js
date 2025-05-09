@@ -27,7 +27,7 @@ router.post('/login', async (req, res) => {
   try {
     // ค้นหาผู้ใช้ที่ username ตรงกัน พร้อมดึง customer_code จาก company
     const query = `
-        SELECT u.id, u.username, u.password, u.company_id, c.customer_code, u.role
+        SELECT u.id, u.username, u.password, u.company_id, c.customer_code, u.role, u.view_map, u.create_staff
         FROM users u
         JOIN company c ON u.company_id = c.id
         WHERE u.username = $1 AND u.deleted_at IS NULL
@@ -55,7 +55,9 @@ router.post('/login', async (req, res) => {
       username: user.username,
       company_id: user.company_id,
       role: user.role,             // เก็บ user role ใน session
-      customer_code: user.customer_code
+      customer_code: user.customer_code,
+      view_map: user.view_map,
+      create_staff: user.create_staff
     };
 
     // บันทึกข้อมูลการใช้งานใน usage_log (event: login)

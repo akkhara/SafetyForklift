@@ -34,7 +34,9 @@
                 <li><a class="dropdown-item" href="/management/site">Site Location</a></li>
                 <li><a class="dropdown-item" href="/management/shift_time">Shift Time</a></li>
               <% } else if (userRole === 'customer_admin') { %>
+                <% if (canManageUsers) { %>
                 <li><a class="dropdown-item" href="/management/user">User</a></li>
+                <% } %>
                 <li><a class="dropdown-item" href="/management/staff">Staff</a></li>
               <% } %>
             </ul>
@@ -42,9 +44,11 @@
         <% } %>
 
         <!-- Map -->
+        <% if (canViewMap) { %>
         <li class="nav-item">
           <a class="nav-link" href="/map">Map</a>
         </li>
+        <% } %>
 
         <!-- Management Plan -->
         <!--li class="nav-item">

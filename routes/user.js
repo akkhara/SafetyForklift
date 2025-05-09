@@ -157,10 +157,10 @@ router.post('/edit/:id', async (req, res) => {
     const companyQuery = `
       SELECT customer_code
       FROM company
-      WHERE id = $1
+      WHERE id = ${company_id}
         AND deleted_at IS NULL
     `;
-    const companyResult = await client.query(companyQuery, [company_id]);
+    const companyResult = await client.query(companyQuery);
     if (companyResult.rows.length === 0) {
       return res.status(400).json({
         Status: "Error",
@@ -179,27 +179,18 @@ router.post('/edit/:id', async (req, res) => {
     const updateQuery = `
       UPDATE users
       SET
-        username = $1,
-        ${hashedPassword ? 'password = $2,' : ''} -- อัปเดตรหัสผ่านเฉพาะเมื่อมีการส่งมา
-        role = $3,
-        company_id = $4,
-        view_map = $5,
-        create_staff = $6,
+        username = '${username}',
+        ${hashedPassword ? `password = '${hashedPassword}',` : ''} -- อัปเดตรหัสผ่านเฉพาะเมื่อมีการส่งมา
+        role = '${role}',
+        company_id = ${company_id},
+        view_map = ${view_map === 'on'},
+        create_staff = ${create_staff === 'on'},
         updated_at = NOW()
-      WHERE id = $7
+      WHERE id = ${userId}
         AND deleted_at IS NULL
     `;
-    const queryParams = [
-      username,
-      ...(hashedPassword ? [hashedPassword] : []), // เพิ่ม hashedPassword ถ้ามี
-      role,
-      company_id,
-      view_map === 'on',
-      create_staff === 'on',
-      userId
-    ];
 
-    await client.query(updateQuery, queryParams);
+    await client.query(updateQuery);
 
     // บันทึกข้อมูลการใช้งาน (Usage Log) สำหรับการแก้ไข user
     const usageLogQuery = `
@@ -211,15 +202,16 @@ router.post('/edit/:id', async (req, res) => {
         user_agent,
         created_at
       )
-      VALUES ($1, $2, $3, $4, $5, NOW())
+      VALUES (
+        ${req.session.user ? req.session.user.id : 'NULL'},
+        'edit_user',
+        'User edited user with ID ${userId}',
+        '${req.ip}',
+        '${req.headers['user-agent'] || ''}',
+        NOW()
+      )
     `;
-    await client.query(usageLogQuery, [
-      req.session.user ? req.session.user.id : null,
-      'edit_user',
-      `User edited user with ID ${userId}`,
-      req.ip,
-      req.headers['user-agent'] || ''
-    ]);
+    await client.query(usageLogQuery);
 
     res.redirect('/management/user');
   } catch (error) {

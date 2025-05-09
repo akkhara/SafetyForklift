@@ -883,7 +883,7 @@ app.get('/admin', (req, res) => {
 
   // ตรวจสอบสิทธิ์ (ตัวอย่าง: user.role หรือ user.permissions)
   const canManageUsers = user.create_staff;
-  const canViewMap = user.view_map;
+  const canViewMap = user.view_map === true;
 
   res.render('admin_home', { canManageUsers, canViewMap });
 });

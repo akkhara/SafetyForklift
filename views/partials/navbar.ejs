@@ -29,7 +29,7 @@
                 <li><a class="dropdown-item" href="/management/site">Site Location</a></li>
                 <li><a class="dropdown-item" href="/management/shift_time">Shift Time</a></li>
               <% } else if (userRole === 'customer_admin') { %>
-                <% if (canManageUsers) { %>
+                <% if (userPermission.create_staff) { %>
                 <li><a class="dropdown-item" href="/management/user">User</a></li>
                 <% } %>
                 <li><a class="dropdown-item" href="/management/staff">Staff</a></li>
@@ -39,7 +39,7 @@
         <% } %>
 
         <!-- Map -->
-        <% if (typeof canViewMap !== 'undefined' && canViewMap) { %>
+        <% if (userPermission.view_map) { %>
         <li class="nav-item">
           <a class="nav-link" href="/map">Map</a>
         </li>

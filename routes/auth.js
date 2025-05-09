@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto'); // สมมติใช้ scryptSync ในการ hash password
 const pool = require('../index'); // นำเข้า pool จาก index.js
+const { permission } = require('process');
 
 /* 
   GET /login
@@ -56,8 +57,7 @@ router.post('/login', async (req, res) => {
       company_id: user.company_id,
       role: user.role,             // เก็บ user role ใน session
       customer_code: user.customer_code,
-      view_map: user.view_map,
-      create_staff: user.create_staff
+      permission: {view_map: user.view_map, create_staff: user.create_staff}
     };
 
     // บันทึกข้อมูลการใช้งานใน usage_log (event: login)

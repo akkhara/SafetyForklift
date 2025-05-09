@@ -62,8 +62,10 @@ io.use((socket, next) => {
 app.use((req, res, next) => {
   if (req.session.user) {
     res.locals.userRole = req.session.user.role; // ส่ง role ไปยัง View
+    res.locals.userPermission = req.session.user.permission; // ส่ง permission ไปยัง View
   } else {
     res.locals.userRole = null;
+    res.locals.userPermission = null;
   }
   next();
 });

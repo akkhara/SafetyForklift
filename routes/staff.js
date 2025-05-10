@@ -314,15 +314,26 @@ router.post('/delete/:id', async (req, res) => {
   const staffId = req.params.id;
   const client = await pool.connect();
   try {
-    const deleteQuery = `
+    // ลบ staff (Soft Delete)
+    const deleteStaffQuery = `
       UPDATE staff
       SET deleted_at = NOW()
       WHERE id = $1
         AND deleted_at IS NULL
     `;
-    await client.query(deleteQuery, [staffId]);
+    await client.query(deleteStaffQuery, [staffId]);
 
-    // บันทึกข้อมูลการใช้งาน (Usage Log) สำหรับการลบ Staff
+    // เคลียร์ assigned_staff_id ในตาราง card
+    const clearCardQuery = `
+      UPDATE card
+      SET assigned_staff_id = NULL,
+          updated_at = NOW()
+      WHERE assigned_staff_id = $1
+        AND deleted_at IS NULL
+    `;
+    await client.query(clearCardQuery, [staffId]);
+
+    // บันทึกการใช้งาน (Usage Log) สำหรับลบ staff
     const usageLogQuery = `
       INSERT INTO usage_log (
         user_id,
@@ -337,7 +348,7 @@ router.post('/delete/:id', async (req, res) => {
     await client.query(usageLogQuery, [
       req.session.user ? req.session.user.id : null,
       'delete_staff',
-      `User deleted staff with ID ${staffId}`,
+      `User deleted staff with ID ${staffId} and cleared assigned_staff_id in cards`,
       req.ip,
       req.headers['user-agent'] || ''
     ]);

@@ -2,87 +2,99 @@
 <html>
 
 <head>
-	<meta charset="UTF-8" />
-	<title>Card Management</title>
-	<!-- Bootstrap 5 CSS -->
-	<!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"-->
-	<link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/united/bootstrap.min.css" rel="stylesheet">
-	<style>
-		body {
-			padding-top: 70px;
-			/* ปรับตามความสูงของ Navbar */
-		}
+  <meta charset="UTF-8" />
+  <title>Card Management</title>
+  <!-- Bootstrap 5 CSS -->
+  <!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"-->
+  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/united/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 70px;
+      /* ปรับตามความสูงของ Navbar */
+    }
 
-		td div:first-child {
-			font-size: 1em;
-			/* HEX ขนาดปกติ */
-			font-weight: bold;
-		}
+    td div:first-child {
+      font-size: 1em;
+      /* HEX ขนาดปกติ */
+      font-weight: bold;
+    }
 
-		td div:last-child {
-			font-size: 0.85em;
-			/* DEC ขนาดเล็กกว่า */
-			color: gray;
-			/* สีเทา */
-		}
-	</style>
+    td div:last-child {
+      font-size: 0.85em;
+      /* DEC ขนาดเล็กกว่า */
+      color: gray;
+      /* สีเทา */
+    }
+  </style>
 </head>
 
 <body>
-	<!-- เรียกใช้ Partial Navbar -->
-	<%- include('partials/navbar') %>
-	<% function leHexToBeHex(leHex) { %>
-		<% if (!leHex) return ''; %>
-		<% const bytes = leHex.match(/.{1,2}/g); %>
-		<% return bytes.reverse().join('').toUpperCase(); %>
-	  <% } %>
-		<div class="container-fluid mt-4">
-			<h1>Card Management</h1>
+  <!-- เรียกใช้ Partial Navbar -->
+  <%- include('partials/navbar') %>
+    <% function leHexToBeHex(leHex) { %>
+      <% if (!leHex) return '' ; %>
+        <% const bytes=leHex.match(/.{1,2}/g); %>
+          <% return bytes.reverse().join('').toUpperCase(); %>
+            <% } %>
+              <div class="container-fluid mt-4">
+                <h1>Card Management</h1>
 
-			<!-- ปุ่ม Add Card -->
-			<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#cardModal"
-				onclick="openAddCardModal()">
-				Add Card
-			</button>
+                <!-- ปุ่ม Add Card -->
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#cardModal"
+                  onclick="openAddCardModal()">
+                  Add Card
+                </button>
 
-			<!-- ตารางแสดง Card -->
-			<table class="table table-bordered table-striped table-hover">
-				<thead>
-  <tr>
-    <th>ID</th>
-    <th>UID</th>
-    <th>Issue Date</th>
-    <th>Status</th>
-    <th>Assigned Staff</th>
-    <th>Company</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-<tbody>
-  <% if (cards.length === 0) { %>
-    <tr>
-      <td colspan="7" class="text-center">No card found.</td>
-    </tr>
-  <% } else { %>
-    <% cards.forEach(cd => { %>
-      <tr>
-        <td><%= cd.card_id %></td>
-        <td>
-          <div>
-            <strong><%= (cd.uid || '') %></strong> <!-- Big-Endian HEX -->
-          </div>
-          <div style="font-size: 0.85em; color: gray;">
-            <%= BigInt('0x' + leHexToBeHex(cd.uid || '')).toString() || '' %> <!-- DEC -->
-          </div>
-        </td>
-        <td><%= cd.issue_date %></td>
-        <td><%= cd.status || '' %></td>
-        <td><%= cd.staff_name || '' %></td>
-        <td><%= cd.company_name || 'Unassigned' %></td>
-        <td>
-          <!-- ปุ่ม Edit -->
-          <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
-            data-bs-target="#cardModal" onclick="openEditCardModal(
+                <!-- ตารางแสดง Card -->
+                <table class="table table-bordered table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>UID</th>
+                      <th>Issue Date</th>
+                      <th>Status</th>
+                      <th>Assigned Staff</th>
+                      <th>Company</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (cards.length===0) { %>
+                      <tr>
+                        <td colspan="7" class="text-center">No card found.</td>
+                      </tr>
+                      <% } else { %>
+                        <% cards.forEach(cd=> { %>
+                          <tr>
+                            <td>
+                              <%= cd.card_id %>
+                            </td>
+                            <td>
+                              <div>
+                                <strong>
+                                  <%= (cd.uid || '' ) %>
+                                </strong> <!-- Big-Endian HEX -->
+                              </div>
+                              <div style="font-size: 0.85em; color: gray;">
+                                <%= BigInt('0x' + leHexToBeHex(cd.uid || '' )).toString() || '' %> <!-- DEC -->
+                              </div>
+                            </td>
+                            <td>
+                              <%= cd.issue_date %>
+                            </td>
+                            <td>
+                              <%= cd.status || '' %>
+                            </td>
+                            <td>
+                              <%= cd.staff_name || '' %>
+                            </td>
+                            <td>
+                              <%= cd.company_name || 'Unassigned' %>
+                            </td>
+                            <td>
+                              <!-- ปุ่ม Edit -->
+                              <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#cardModal"
+                                onclick="openEditCardModal(
               <%= cd.card_id %>,
               <%= cd.staff_id %>,
               '<%= cd.issue_date %>',
@@ -90,170 +102,177 @@
               '<%= cd.uid ? cd.uid.replace(/'/g, '\\\'') : '' %>',
               <%= cd.company_id == 0 ? cd.company_id : (cd.company_id || 'null') %>
             )">
-            Edit
-          </button>
-          <!-- ปุ่ม Delete -->
-          <form action="/management/card/delete/<%= cd.card_id %>" method="POST"
-            class="d-inline"
-            onsubmit="return confirm('Are you sure you want to delete this card?');">
-            <button type="submit" class="btn btn-sm btn-danger">
-              Delete
-            </button>
-          </form>
-        </td>
-      </tr>
-    <% }) %>
-  <% } %>
-</tbody>
-			</table>
-		</div>
+                                Edit
+                              </button>
+                              <!-- ปุ่ม Delete -->
+                              <form action="/management/card/delete/<%= cd.card_id %>" method="POST" class="d-inline"
+                                onsubmit="return confirm('Are you sure you want to delete this card?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                  Delete
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                          <% }) %>
+                            <% } %>
+                  </tbody>
+                </table>
+              </div>
 
-		<!-- Modal สำหรับ Add/Edit Card -->
-		<div class="modal fade" id="cardModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<form id="cardForm" method="POST">
-						<div class="modal-header">
-							<h5 class="modal-title" id="cardModalLabel">Add Card</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-						</div>
-						<div class="modal-body">
-							<input type="hidden" id="cardId" />
+              <!-- Modal สำหรับ Add/Edit Card -->
+              <div class="modal fade" id="cardModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form id="cardForm" method="POST">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="cardModalLabel">Add Card</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                        <input type="hidden" id="cardId" />
 
-							<div class="mb-3">
-								<label for="uid" class="form-label">UID:</label>
-								<input type="text" class="form-control" id="uid" name="uid" />
-							</div>
+                        <div class="mb-3">
+                          <label for="uid" class="form-label">UID:</label>
+                          <input type="text" class="form-control" id="uid" name="uid" />
+                        </div>
 
-							<div class="mb-3">
-								<label for="company_id" class="form-label">Company:</label>
-								<select class="form-select" id="company_id" name="company_id" onchange="updateAssignedStaff()">
-									<option value="">-- None --</option>
-									<% companies.forEach(company => { %>
-									  <option value="<%= company.id %>"><%= company.name %></option>
-									<% }) %>
-								</select>
-							</div>
+                        <div class="mb-3">
+                          <label for="company_id" class="form-label">Company:</label>
+                          <select class="form-select" id="company_id" name="company_id"
+                            onchange="updateAssignedStaff()">
+                            <option value="">-- None --</option>
+                            <% companies.forEach(company=> { %>
+                              <option value="<%= company.id %>">
+                                <%= company.name %>
+                              </option>
+                              <% }) %>
+                          </select>
+                        </div>
 
-							<div class="mb-3">
-								<label for="assigned_staff_id" class="form-label">Assigned Staff:</label>
-								<select class="form-select" id="assigned_staff_id" name="assigned_staff_id">
-									<option value="">-- Select a Company First --</option>
-								</select>
-							</div>
+                        <div class="mb-3">
+                          <label for="assigned_staff_id" class="form-label">Assigned Staff:</label>
+                          <select class="form-select" id="assigned_staff_id" name="assigned_staff_id">
+                            <option value="">-- Select a Company First --</option>
+                          </select>
+                        </div>
 
-							<div class="mb-3">
-								<label for="issue_date" class="form-label">Issue Date:</label>
-								<input type="date" class="form-control" id="issue_date" name="issue_date" required />
-							</div>
+                        <div class="mb-3">
+                          <label for="issue_date" class="form-label">Issue Date:</label>
+                          <input type="date" class="form-control" id="issue_date" name="issue_date" required />
+                        </div>
 
-							<div class="mb-3">
-								<label for="status" class="form-label">Status:</label>
-								<input type="text" class="form-control" id="status" name="status" />
-							</div>
+                        <div class="mb-3">
+                          <label for="status" class="form-label">Status:</label>
+                          <input type="text" class="form-control" id="status" name="status" />
+                        </div>
 
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-								Close
-							</button>
-							<button type="submit" class="btn btn-primary" id="submitBtn">
-								Save
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                          Close
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                          Save
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
 
-		<!-- Bootstrap 5 JS -->
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+              <!-- Bootstrap 5 JS -->
+              <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-		<script>
-			// ฟังก์ชันเปิด Modal ในโหมด Add Card
-			function openAddCardModal() {
-				document.getElementById('cardModalLabel').textContent = 'Add Card';
-				document.getElementById('cardForm').action = '/management/card/add';
+              <script>
+                // ฟังก์ชันเปิด Modal ในโหมด Add Card
+                function openAddCardModal() {
+                  document.getElementById('cardModalLabel').textContent = 'Add Card';
+                  document.getElementById('cardForm').action = '/management/card/add';
 
-				// เคลียร์ฟอร์ม
-				document.getElementById('cardId').value = '';
-				document.getElementById('assigned_staff_id').selectedIndex = 0;
-				document.getElementById('company_id').selectedIndex = 0;
+                  // เคลียร์ฟอร์ม
+                  document.getElementById('cardId').value = '';
+                  document.getElementById('assigned_staff_id').selectedIndex = 0;
+                  document.getElementById('company_id').selectedIndex = 0;
 
-				// กำหนด issue_date = วันที่ปัจจุบัน
-				const today = new Date();
-				const yyyy = today.getFullYear();
-				const mm = String(today.getMonth() + 1).padStart(2, '0');
-				const dd = String(today.getDate()).padStart(2, '0');
-				const defaultDate = `${yyyy}-${mm}-${dd}`;
+                  // กำหนด issue_date = วันที่ปัจจุบัน
+                  const today = new Date();
+                  const yyyy = today.getFullYear();
+                  const mm = String(today.getMonth() + 1).padStart(2, '0');
+                  const dd = String(today.getDate()).padStart(2, '0');
+                  const defaultDate = `${yyyy}-${mm}-${dd}`;
 
-				document.getElementById('issue_date').value = defaultDate;
-				document.getElementById('status').value = '';
-				document.getElementById('uid').value = '';
-			}
+                  document.getElementById('issue_date').value = defaultDate;
+                  document.getElementById('status').value = '';
+                  document.getElementById('uid').value = '';
+                }
 
-			// ฟังก์ชันเปิด Modal ในโหมด Edit Card
-			function openEditCardModal(
-  cardId,
-  staffId,
-  issueDate,
-  status,
-  uid,
-  companyId
-) {
-  document.getElementById('cardModalLabel').textContent = 'Edit Card';
-  document.getElementById('cardForm').action = '/management/card/edit/' + cardId;
+                // ฟังก์ชันเปิด Modal ในโหมด Edit Card
+                function openEditCardModal(
+                  cardId,
+                  staffId,
+                  issueDate,
+                  status,
+                  uid,
+                  companyId
+                ) {
+                  document.getElementById('cardModalLabel').textContent = 'Edit Card';
+                  document.getElementById('cardForm').action = '/management/card/edit/' + cardId;
 
-  document.getElementById('cardId').value = cardId;
-  document.getElementById('issue_date').value = issueDate;
-  document.getElementById('status').value = status;
-  document.getElementById('uid').value = uid;
+                  document.getElementById('cardId').value = cardId;
+                  document.getElementById('issue_date').value = issueDate;
+                  document.getElementById('status').value = status;
+                  document.getElementById('uid').value = uid;
 
-  // ตรวจสอบ companyId หากเป็น 0 ให้ตั้งค่าเป็นค่าว่าง
-  document.getElementById('company_id').value = companyId && companyId !== 0 ? companyId : '';
+                  // ตรวจสอบ companyId หากเป็น 0 ให้ตั้งค่าเป็นค่าว่าง
+                  document.getElementById('company_id').value = companyId;
 
-  // เรียก updateAssignedStaff เพื่อโหลดพนักงานที่เกี่ยวข้องกับบริษัท
-  updateAssignedStaff(() => {
-    // ตั้งค่า Assigned Staff หลังจากโหลดข้อมูลสำเร็จ
-    document.getElementById('assigned_staff_id').value = staffId || '';
-  });
-}
+                  // เรียก updateAssignedStaff เพื่อโหลดพนักงานที่เกี่ยวข้องกับบริษัท
+                  updateAssignedStaff(() => {
+                    // ตั้งค่า Assigned Staff หลังจากโหลดข้อมูลสำเร็จ
+                    document.getElementById('assigned_staff_id').value = staffId || '';
+                  });
+                }
 
-			function leHexToBeHex(leHex) {
-				if (!leHex) return '';
-				const bytes = leHex.match(/.{1,2}/g);
-				return bytes.reverse().join('').toUpperCase();
-			}
+                function leHexToBeHex(leHex) {
+                  if (!leHex) return '';
+                  const bytes = leHex.match(/.{1,2}/g);
+                  return bytes.reverse().join('').toUpperCase();
+                }
 
-			function updateAssignedStaff() {
-  const companyId = document.getElementById('company_id').value;
-  const assignedStaffDropdown = document.getElementById('assigned_staff_id');
+                function updateAssignedStaff(callback) {
+                  const companyId = document.getElementById('company_id').value;
+                  const assignedStaffDropdown = document.getElementById('assigned_staff_id');
 
-  // เคลียร์ตัวเลือกใน Dropdown
-  assignedStaffDropdown.innerHTML = '<option value="">-- Select a Company First --</option>';
+                  // เคลียร์ตัวเลือกใน Dropdown
+                  assignedStaffDropdown.innerHTML = '<option value="">-- Select a Company First --</option>';
 
-  // หากไม่มีการเลือกบริษัท ให้หยุดการทำงาน
-  if (!companyId) return;
+                  // หากไม่มีการเลือกบริษัท (companyId เป็นค่าว่าง), ให้หยุดการทำงาน
+                  if (companyId === '') {
+                    if (callback) callback(); // เรียก Callback ถ้ามี
+                    return;
+                  }
 
-  // ดึงข้อมูลพนักงานที่เกี่ยวข้องกับบริษัทผ่าน API
-  fetch(`/management/staff/by-company/${companyId}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data && data.staffs) {
-        assignedStaffDropdown.innerHTML = '<option value="">-- Select Staff --</option>';
-        data.staffs.forEach(staff => {
-          const option = document.createElement('option');
-          option.value = staff.id;
-          option.textContent = staff.name;
-          assignedStaffDropdown.appendChild(option);
-        });
-      }
-    })
-    .catch(error => {
-      console.error('Error fetching staff:', error);
-    });
-}
-		</script>
+                  // ดึงข้อมูลพนักงานที่เกี่ยวข้องกับบริษัทผ่าน API
+                  fetch(`/management/staff/by-company/${companyId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                      if (data && data.staffs) {
+                        assignedStaffDropdown.innerHTML = '<option value="">-- Select Staff --</option>';
+                        data.staffs.forEach(staff => {
+                          const option = document.createElement('option');
+                          option.value = staff.id;
+                          option.textContent = staff.name;
+                          assignedStaffDropdown.appendChild(option);
+                        });
+                      }
+                      if (callback) callback(); // เรียก Callback หลังจากโหลดข้อมูลสำเร็จ
+                    })
+                    .catch(error => {
+                      console.error('Error fetching staff:', error);
+                      if (callback) callback(); // เรียก Callback แม้เกิดข้อผิดพลาด
+                    });
+                }
+              </script>
 </body>
 
 </html>

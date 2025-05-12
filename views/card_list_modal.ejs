@@ -194,23 +194,30 @@
 
 			// ฟังก์ชันเปิด Modal ในโหมด Edit Card
 			function openEditCardModal(
-				cardId,
-				staffId,
-				issueDate,
-				status,
-				uid,
-				companyId
-			) {
-				document.getElementById('cardModalLabel').textContent = 'Edit Card';
-				document.getElementById('cardForm').action = '/management/card/edit/' + cardId;
+  cardId,
+  staffId,
+  issueDate,
+  status,
+  uid,
+  companyId
+) {
+  document.getElementById('cardModalLabel').textContent = 'Edit Card';
+  document.getElementById('cardForm').action = '/management/card/edit/' + cardId;
 
-				document.getElementById('cardId').value = cardId;
-				document.getElementById('assigned_staff_id').value = staffId;
-				document.getElementById('issue_date').value = issueDate;
-				document.getElementById('status').value = status;
-				document.getElementById('uid').value = uid;
-				document.getElementById('company_id').value = companyId == 0 ? companyId : (companyId || 'null');
-			}
+  document.getElementById('cardId').value = cardId;
+  document.getElementById('issue_date').value = issueDate;
+  document.getElementById('status').value = status;
+  document.getElementById('uid').value = uid;
+
+  // ตรวจสอบ companyId หากเป็น 0 ให้ตั้งค่าเป็นค่าว่าง
+  document.getElementById('company_id').value = companyId && companyId !== 0 ? companyId : '';
+
+  // เรียก updateAssignedStaff เพื่อโหลดพนักงานที่เกี่ยวข้องกับบริษัท
+  updateAssignedStaff(() => {
+    // ตั้งค่า Assigned Staff หลังจากโหลดข้อมูลสำเร็จ
+    document.getElementById('assigned_staff_id').value = staffId || '';
+  });
+}
 
 			function leHexToBeHex(leHex) {
 				if (!leHex) return '';

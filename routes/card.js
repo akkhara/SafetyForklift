@@ -20,26 +20,29 @@ router.get('/', async (req, res) => {
         TO_CHAR(c.issue_date, 'YYYY-MM-DD') AS issue_date,
         c.status,
         s.id AS staff_id,
-        s.name AS staff_name
+        s.name AS staff_name,
+        co.id AS company_id,
+        co.name AS company_name
       FROM card c
-      JOIN staff s ON c.assigned_staff_id = s.id
+      LEFT JOIN staff s ON c.assigned_staff_id = s.id
+      LEFT JOIN company co ON c.company_id = co.id
       WHERE c.deleted_at IS NULL
       ORDER BY c.id ASC
     `;
     const result = await client.query(query);
     const cards = result.rows;
 
-    // ดึงรายชื่อ staff (สำหรับ dropdown เลือก assigned_staff_id)
-    const staffResult = await client.query(`
+    // ดึงข้อมูลบริษัทสำหรับ Dropdown
+    const companyQuery = `
       SELECT id, name
-      FROM staff
+      FROM company
       WHERE deleted_at IS NULL
-      ORDER BY id
-    `);
-    const staffs = staffResult.rows;
+      ORDER BY name ASC
+    `;
+    const companyResult = await client.query(companyQuery);
+    const companies = companyResult.rows;
 
-    // render หน้า card_list_modal.ejs
-    res.render('card_list_modal', { cards, staffs });
+    res.render('card_list_modal', { cards, companies });
   } catch (error) {
     console.error('Error fetching cards:', error);
     res.status(500).send('Internal server error');
@@ -52,32 +55,14 @@ router.get('/', async (req, res) => {
    2) เพิ่ม Card (Add) (POST /management/card/add)
 ------------------------------------------*/
 router.post('/add', async (req, res) => {
-  const {
-    assigned_staff_id,
-    issue_date,
-    status,
-    uid
-  } = req.body;
-
+  const { uid, issue_date, status, company_id } = req.body;
   const client = await pool.connect();
   try {
-    const insertQuery = `
-      INSERT INTO card (
-        assigned_staff_id,
-        issue_date,
-        status,
-        uid,
-        created_at,
-        updated_at
-      )
+    const query = `
+      INSERT INTO card (uid, issue_date, status, company_id, created_at, updated_at)
       VALUES ($1, $2, $3, $4, NOW(), NOW())
     `;
-    await client.query(insertQuery, [
-      assigned_staff_id,
-      issue_date,
-      status,
-      uid
-    ]);
+    await client.query(query, [uid, issue_date, status, company_id || null]);
 
     // บันทึกข้อมูลการใช้งานลงใน usage_log หลังจากเพิ่ม card เสร็จ
     const usageLogQuery = `
@@ -113,33 +98,21 @@ router.post('/add', async (req, res) => {
 ------------------------------------------*/
 router.post('/edit/:id', async (req, res) => {
   const cardId = req.params.id;
-  const {
-    assigned_staff_id,
-    issue_date,
-    status,
-    uid
-  } = req.body;
-
+  const { uid, issue_date, status, company_id } = req.body;
   const client = await pool.connect();
   try {
-    const updateQuery = `
+    const query = `
       UPDATE card
       SET
-        assigned_staff_id = $1,
+        uid = $1,
         issue_date = $2,
         status = $3,
-        uid = $4,
+        company_id = $4,
         updated_at = NOW()
       WHERE id = $5
         AND deleted_at IS NULL
     `;
-    await client.query(updateQuery, [
-      assigned_staff_id,
-      issue_date,
-      status,
-      uid,
-      cardId
-    ]);
+    await client.query(query, [uid, issue_date, status, company_id || null, cardId]);
 
     // บันทึกการใช้งาน (Usage Log) สำหรับแก้ไข card
     const usageLogQuery = `

@@ -88,7 +88,7 @@
               '<%= cd.issue_date %>',
               '<%= cd.status ? cd.status.replace(/'/g, '\\\'') : '' %>',
               '<%= cd.uid ? cd.uid.replace(/'/g, '\\\'') : '' %>',
-              <%= cd.company_id %>
+              <%= cd.company_id == 0 ? cd.company_id : (cd.company_id || 'null') %>
             )">
             Edit
           </button>
@@ -209,7 +209,7 @@
 				document.getElementById('issue_date').value = issueDate;
 				document.getElementById('status').value = status;
 				document.getElementById('uid').value = uid;
-				document.getElementById('company_id').value = companyId || '';
+				document.getElementById('company_id').value = companyId == 0 ? companyId : (companyId || 'null');
 			}
 
 			function leHexToBeHex(leHex) {

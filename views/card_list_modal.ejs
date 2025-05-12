@@ -229,7 +229,7 @@
   if (!companyId) return;
 
   // ดึงข้อมูลพนักงานที่เกี่ยวข้องกับบริษัทผ่าน API
-  fetch(`/staff/by-company/${companyId}`)
+  fetch(`/management/staff/by-company/${companyId}`)
     .then(response => response.json())
     .then(data => {
       if (data && data.staffs) {

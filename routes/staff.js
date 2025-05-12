@@ -362,4 +362,28 @@ router.post('/delete/:id', async (req, res) => {
   }
 });
 
+/* -----------------------------------------
+   5) ดึง Staff ตามบริษัท (GET /management/staff/by-company/:companyId)
+------------------------------------------*/
+router.get('/by-company/:companyId', async (req, res) => {
+  const companyId = req.params.companyId;
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT id, name
+      FROM staff
+      WHERE company_id = $1
+        AND deleted_at IS NULL
+      ORDER BY name ASC
+    `;
+    const result = await client.query(query, [companyId]);
+    res.json({ staffs: result.rows });
+  } catch (error) {
+    console.error('Error fetching staff by company:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

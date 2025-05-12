@@ -88,7 +88,7 @@
               '<%= cd.issue_date %>',
               '<%= cd.status ? cd.status.replace(/'/g, '\\\'') : '' %>',
               '<%= cd.uid ? cd.uid.replace(/'/g, '\\\'') : '' %>',
-              <%= cd.company_id || 'null' %>
+              <%= cd.company_id %>
             )">
             Edit
           </button>

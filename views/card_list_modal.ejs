@@ -109,7 +109,8 @@
               '<%= cd.issue_date %>',
               '<%= cd.status ? cd.status.replace(/'/g, '\\\'') : '' %>',
               '<%= cd.uid ? cd.uid.replace(/'/g, '\\\'') : '' %>',
-              <%= cd.company_id == 0 ? cd.company_id : (cd.company_id || 'null') %>
+              <%= cd.company_id == 0 ? cd.company_id : (cd.company_id || 'null') %>,
+              <%= JSON.stringify(cd.fleet_ids || []) %>
             )">
                                 Edit
                               </button>

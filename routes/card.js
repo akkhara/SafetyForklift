@@ -8,12 +8,9 @@ const pool = require('../index'); // นำเข้า pool จาก index.js
    - JOIN กับ staff เพื่อดึงชื่อ staff
 ------------------------------------------*/
 router.get('/', async (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/login');
-  }
   const client = await pool.connect();
   try {
-    const query = `
+    const cardQuery = `
       SELECT
         c.id AS card_id,
         c.uid,
@@ -22,15 +19,18 @@ router.get('/', async (req, res) => {
         s.id AS staff_id,
         s.name AS staff_name,
         co.id AS company_id,
-        co.name AS company_name
+        co.name AS company_name,
+        ARRAY_REMOVE(ARRAY_AGG(cf.fleet_id), NULL) AS fleet_ids
       FROM card c
       LEFT JOIN staff s ON c.assigned_staff_id = s.id
       LEFT JOIN company co ON c.company_id = co.id
+      LEFT JOIN card_fleet cf ON c.id = cf.card_id
       WHERE c.deleted_at IS NULL
+      GROUP BY c.id, s.id, co.id
       ORDER BY c.id ASC
     `;
-    const result = await client.query(query);
-    const cards = result.rows;
+    const cardResult = await client.query(cardQuery);
+    const cards = cardResult.rows;
 
     // ดึงข้อมูลบริษัทสำหรับ Dropdown
     const companyQuery = `

@@ -157,10 +157,10 @@
                         </div>
 
                         <div class="mb-3">
-                          <label for="fleet_ids" class="form-label">Fleets:</label>
-                          <select class="form-select" id="fleet_ids" name="fleet_ids" multiple>
-                            <option value="">-- Select a Company First --</option>
-                          </select>
+                          <label class="form-label">Fleets:</label>
+                          <div id="fleet_checkbox_list">
+                            <span class="text-muted">-- Select a Company First --</span>
+                          </div>
                         </div>
 
                         <div class="mb-3">
@@ -281,8 +281,8 @@
 
                 function updateFleetList(selectedFleetIds) {
                   const companyId = document.getElementById('company_id').value;
-                  const fleetDropdown = document.getElementById('fleet_ids');
-                  fleetDropdown.innerHTML = '<option value="">-- Select a Company First --</option>';
+                  const fleetListDiv = document.getElementById('fleet_checkbox_list');
+                  fleetListDiv.innerHTML = '<span class="text-muted">-- Select a Company First --</span>';
 
                   if (!companyId) return;
 
@@ -290,15 +290,16 @@
                     .then(response => response.json())
                     .then(data => {
                       if (data && data.fleets) {
-                        fleetDropdown.innerHTML = '';
+                        fleetListDiv.innerHTML = '';
                         data.fleets.forEach(fleet => {
-                          const option = document.createElement('option');
-                          option.value = fleet.id;
-                          option.textContent = fleet.vehicle_name;
-                          if (selectedFleetIds && selectedFleetIds.includes(fleet.id)) {
-                            option.selected = true;
-                          }
-                          fleetDropdown.appendChild(option);
+                          const checkboxId = `fleet_${fleet.id}`;
+                          const checked = selectedFleetIds && selectedFleetIds.includes(fleet.id) ? 'checked' : '';
+                          fleetListDiv.innerHTML += `
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="fleet_ids" id="${checkboxId}" value="${fleet.id}" ${checked}>
+              <label class="form-check-label" for="${checkboxId}">${fleet.vehicle_name}</label>
+            </div>
+          `;
                         });
                       }
                     })

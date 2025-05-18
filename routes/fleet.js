@@ -292,10 +292,10 @@ router.get('/by-company/:companyId', async (req, res) => {
   const client = await pool.connect();
   try {
     const query = `
-      SELECT id, name
+      SELECT id, vehicle_name
       FROM fleet
       WHERE company_id = $1 AND deleted_at IS NULL
-      ORDER BY name ASC
+      ORDER BY vehicle_name ASC
     `;
     const result = await client.query(query, [companyId]);
     res.json({ fleets: result.rows });

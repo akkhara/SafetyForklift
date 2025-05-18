@@ -294,7 +294,7 @@
                         data.fleets.forEach(fleet => {
                           const option = document.createElement('option');
                           option.value = fleet.id;
-                          option.textContent = fleet.veficle_name;
+                          option.textContent = fleet.vehicle_name;
                           if (selectedFleetIds && selectedFleetIds.includes(fleet.id)) {
                             option.selected = true;
                           }

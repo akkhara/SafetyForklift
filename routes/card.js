@@ -51,20 +51,36 @@ router.get('/', async (req, res) => {
   }
 });
 
-/* -----------------------------------------
-   2) เพิ่ม Card (Add) (POST /management/card/add)
-------------------------------------------*/
+// เพิ่ม Card
 router.post('/add', async (req, res) => {
-  const { uid, issue_date, status, company_id } = req.body;
+  const { uid, issue_date, status, company_id, assigned_staff_id } = req.body;
+  let fleet_ids = req.body.fleet_ids;
+  if (!fleet_ids) fleet_ids = [];
+  if (!Array.isArray(fleet_ids)) fleet_ids = [fleet_ids];
+
   const client = await pool.connect();
   try {
-    const query = `
-      INSERT INTO card (uid, issue_date, status, company_id, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, NOW(), NOW())
+    await client.query('BEGIN');
+    const insertCardQuery = `
+      INSERT INTO card (uid, issue_date, status, company_id, assigned_staff_id, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      RETURNING id
     `;
-    await client.query(query, [uid, issue_date, status, company_id || null]);
+    const cardResult = await client.query(insertCardQuery, [
+      uid, issue_date, status, company_id || null, assigned_staff_id || null
+    ]);
+    const cardId = cardResult.rows[0].id;
 
-    // บันทึกข้อมูลการใช้งานลงใน usage_log หลังจากเพิ่ม card เสร็จ
+    // เพิ่ม fleet ที่เลือก
+    if (fleet_ids.length > 0 && fleet_ids[0] !== '') {
+      const insertFleetQuery = `
+        INSERT INTO card_fleet (card_id, fleet_id)
+        SELECT $1, UNNEST($2::int[])
+      `;
+      await client.query(insertFleetQuery, [cardId, fleet_ids.map(Number)]);
+    }
+
+    // บันทึกการใช้งาน (Usage Log) สำหรับเพิ่ม card
     const usageLogQuery = `
       INSERT INTO usage_log (
         user_id,
@@ -77,15 +93,17 @@ router.post('/add', async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, NOW())
     `;
     await client.query(usageLogQuery, [
-      req.session.user ? req.session.user.id : null,  // user_id จาก session
-      'add_card',                                      // event_type
-      'User added a new card',                         // event_description
-      req.ip,                                          // IP Address
-      req.headers['user-agent'] || ''                  // User Agent
+      req.session.user ? req.session.user.id : null,
+      'add_card',
+      `User added card with UID ${uid}`,
+      req.ip,
+      req.headers['user-agent'] || ''
     ]);
 
+    await client.query('COMMIT');
     res.redirect('/management/card');
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error adding card:', error);
     res.status(500).send('Internal server error');
   } finally {
@@ -98,21 +116,39 @@ router.post('/add', async (req, res) => {
 ------------------------------------------*/
 router.post('/edit/:id', async (req, res) => {
   const cardId = req.params.id;
-  const { uid, issue_date, status, company_id } = req.body;
+  const { uid, issue_date, status, company_id, assigned_staff_id } = req.body;
+  let fleet_ids = req.body.fleet_ids;
+  if (!fleet_ids) fleet_ids = [];
+  if (!Array.isArray(fleet_ids)) fleet_ids = [fleet_ids];
+
   const client = await pool.connect();
   try {
-    const query = `
+    await client.query('BEGIN');
+    const updateCardQuery = `
       UPDATE card
-      SET
-        uid = $1,
-        issue_date = $2,
-        status = $3,
-        company_id = $4,
-        updated_at = NOW()
-      WHERE id = $5
-        AND deleted_at IS NULL
+      SET uid = $1,
+          issue_date = $2,
+          status = $3,
+          company_id = $4,
+          assigned_staff_id = $5,
+          updated_at = NOW()
+      WHERE id = $6 AND deleted_at IS NULL
     `;
-    await client.query(query, [uid, issue_date, status, company_id || null, cardId]);
+    await client.query(updateCardQuery, [
+      uid, issue_date, status, company_id || null, assigned_staff_id || null, cardId
+    ]);
+
+    // ลบ fleet เดิมทั้งหมด
+    await client.query('DELETE FROM card_fleet WHERE card_id = $1', [cardId]);
+
+    // เพิ่ม fleet ใหม่
+    if (fleet_ids.length > 0 && fleet_ids[0] !== '') {
+      const insertFleetQuery = `
+        INSERT INTO card_fleet (card_id, fleet_id)
+        SELECT $1, UNNEST($2::int[])
+      `;
+      await client.query(insertFleetQuery, [cardId, fleet_ids.map(Number)]);
+    }
 
     // บันทึกการใช้งาน (Usage Log) สำหรับแก้ไข card
     const usageLogQuery = `
@@ -134,8 +170,10 @@ router.post('/edit/:id', async (req, res) => {
       req.headers['user-agent'] || ''
     ]);
 
+    await client.query('COMMIT');
     res.redirect('/management/card');
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error editing card:', error);
     res.status(500).send('Internal server error');
   } finally {

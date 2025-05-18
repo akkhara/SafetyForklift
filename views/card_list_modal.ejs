@@ -168,7 +168,11 @@
 
                         <div class="mb-3">
                           <label class="form-label">Fleets:</label>
-                          <div id="fleet_checkbox_list">
+                          <div class="mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="selectAllFleets()">Select All</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllFleets()">Clear All</button>
+                          </div>
+                          <div id="fleet_checkbox_list" style="max-height: 180px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; background: #fff;">
                             <span class="text-muted">-- Select a Company First --</span>
                           </div>
                         </div>
@@ -316,6 +320,14 @@
                     .catch(error => {
                       console.error('Error fetching fleets:', error);
                     });
+                }
+
+                function selectAllFleets() {
+                  document.querySelectorAll('#fleet_checkbox_list input[type="checkbox"]').forEach(cb => cb.checked = true);
+                }
+
+                function clearAllFleets() {
+                  document.querySelectorAll('#fleet_checkbox_list input[type="checkbox"]').forEach(cb => cb.checked = false);
                 }
               </script>
 </body>

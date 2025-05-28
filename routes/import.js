@@ -58,6 +58,8 @@ router.post('/', upload.single('importFile'), async (req, res, next) => {
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const rows = xlsx.utils.sheet_to_json(sheet, { defval: null });
 
+  const client = await pool.connect();
+
   // ดึง fleet ทั้งหมดของบริษัทนี้ (ชื่อ -> id)
   const fleetMap = {};
   const fleetRows = await client.query(
@@ -68,7 +70,6 @@ router.post('/', upload.single('importFile'), async (req, res, next) => {
     fleetMap[f.vehicle_name.trim()] = f.id;
   });
 
-  const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const results = [];

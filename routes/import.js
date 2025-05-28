@@ -129,10 +129,10 @@ router.post('/', upload.single('importFile'), async (req, res, next) => {
       } else {
         const insertCard = await client.query(
           `INSERT INTO public.card
-             (assigned_staff_id, issue_date, status, uid, created_at)
-             VALUES ($1, now(), 'active', $2, now())
+             (assigned_staff_id, issue_date, status, uid, created_at, company_id)
+             VALUES ($1, now(), 'active', $2, now(), $3)
              RETURNING id`,
-          [staffId, uidHex]
+          [staffId, uidHex, companyId]
         );
         cardId = insertCard.rows[0].id;
       }

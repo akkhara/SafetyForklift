@@ -53,7 +53,8 @@ router.get('/', async (req, res) => {
 
 // เพิ่ม Card
 router.post('/add', async (req, res) => {
-  const { uid, issue_date, status, company_id, assigned_staff_id } = req.body;
+  let { uid, issue_date, status, company_id, assigned_staff_id } = req.body;
+  uid = uid ? uid.trim() : ''; // <-- เพิ่มบรรทัดนี้
   let fleet_ids = req.body.fleet_ids;
   if (!fleet_ids) fleet_ids = [];
   if (!Array.isArray(fleet_ids)) fleet_ids = [fleet_ids];
@@ -115,8 +116,9 @@ router.post('/add', async (req, res) => {
    3) แก้ไข Card (Edit) (POST /management/card/edit/:id)
 ------------------------------------------*/
 router.post('/edit/:id', async (req, res) => {
+  let { uid, issue_date, status, company_id, assigned_staff_id } = req.body;
+  uid = uid ? uid.trim() : ''; // <-- เพิ่มบรรทัดนี้
   const cardId = req.params.id;
-  const { uid, issue_date, status, company_id, assigned_staff_id } = req.body;
   let fleet_ids = req.body.fleet_ids;
   if (!fleet_ids) fleet_ids = [];
   if (!Array.isArray(fleet_ids)) fleet_ids = [fleet_ids];

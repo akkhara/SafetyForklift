@@ -74,4 +74,27 @@ router.get('/api/fleets', async (req, res) => {
   }
 });
 
+router.get('/api/fleet-history/:fleetId', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT 
+        latitude, 
+        longitude, 
+        TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as timestamp
+      FROM fleet_location_history 
+      WHERE fleet_id = $1 
+      AND created_at >= NOW() - INTERVAL '24 hours'
+      ORDER BY created_at ASC
+    `, [req.params.fleetId]);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching fleet history:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

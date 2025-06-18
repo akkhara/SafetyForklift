@@ -681,7 +681,7 @@ app.post('/shiftin', async (req, res) => {
       return res.status(404).json({ Status: "Error", message: "cardID and deviceID not match." });
     }
 
-    // ตรวจสอบ shift ที่ยังไม่ได้ check out พร้อมดึงชื่อ fleet
+    /* // ตรวจสอบ shift ที่ยังไม่ได้ check out พร้อมดึงชื่อ fleet
     const activeShiftResult = await client.query(`
       SELECT sl.id, sl.fleet_id, f.vehicle_name as fleet_name
       FROM shift_log sl
@@ -700,7 +700,7 @@ app.post('/shiftin', async (req, res) => {
         Status: "Error", 
         message: `Staff must check out from ${activeShift.fleet_name} first` 
       });
-    }
+    } */
 
     // Execute update query
     // Insert a new company

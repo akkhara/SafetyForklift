@@ -681,6 +681,27 @@ app.post('/shiftin', async (req, res) => {
       return res.status(404).json({ Status: "Error", message: "cardID and deviceID not match." });
     }
 
+    // ตรวจสอบ shift ที่ยังไม่ได้ check out พร้อมดึงชื่อ fleet
+    const activeShiftResult = await client.query(`
+      SELECT sl.id, sl.fleet_id, f.vehicle_name as fleet_name
+      FROM shift_log sl
+      JOIN fleet f ON sl.fleet_id = f.id
+      WHERE sl.staff_id = $1 
+        AND sl.check_out IS NULL 
+        AND sl.deleted_at IS NULL
+      ORDER BY sl.check_in DESC 
+      LIMIT 1
+    `, [result.rows[0].staff_id]);
+
+    if (activeShiftResult.rows.length > 0) {
+      // มี shift ที่ยังไม่ได้ check out
+      const activeShift = activeShiftResult.rows[0];
+      return res.status(404).json({ 
+        Status: "Error", 
+        message: `Staff must check out from ${activeShift.fleet_name} first` 
+      });
+    }
+
     // Execute update query
     // Insert a new company
     const insertResult = await client.query(

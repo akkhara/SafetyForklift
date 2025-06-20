@@ -12,6 +12,7 @@ const session = require('express-session');
 const http = require('http');
 const { Server } = require('socket.io');
 const pgSession = require('connect-pg-simple')(session);
+const sharp = require('sharp');
 
 // สร้าง HTTP Server
 const server = http.createServer(app);
@@ -631,6 +632,27 @@ app.post('/checkin', async (req, res) => {
       return res.status(404).json({ Status: "Error", message: `Card ID[${data.cardID}] and device ID[${data.deviceID}] not match.` });
     }
 
+    /* // ตรวจสอบ shift ที่ยังไม่ได้ check out พร้อมดึงชื่อ fleet
+    const activeShiftResult = await client.query(`
+      SELECT sl.id, sl.fleet_id, f.vehicle_name as fleet_name
+      FROM shift_log sl
+      JOIN fleet f ON sl.fleet_id = f.id
+      WHERE sl.staff_id = $1 
+        AND sl.check_out IS NULL 
+        AND sl.deleted_at IS NULL
+      ORDER BY sl.check_in DESC 
+      LIMIT 1
+    `, [result.rows[0].staff_id]);
+
+    if (activeShiftResult.rows.length > 0) {
+      // มี shift ที่ยังไม่ได้ check out
+      const activeShift = activeShiftResult.rows[0];
+      return res.status(404).json({ 
+        Status: "Error", 
+        message: `Staff must check out from ${activeShift.fleet_name} first` 
+      });
+    } */
+
     res.status(200).json({
       Status: "OK",
       message: "Checked in successfully",
@@ -777,8 +799,9 @@ app.post('/shiftout', async (req, res) => {
   }
 });
 
-app.get("/getimage/:staffId", async (req, res) => {
+app.get("/getimage/:staffId/:imgSize?", async (req, res) => {
   const staff_id = req.params.staffId;
+  const imgSize = req.params.imgSize || 'small';
   const client = await pool.connect();
 
   try {
@@ -793,7 +816,15 @@ app.get("/getimage/:staffId", async (req, res) => {
       return res.status(404).json({ Status: "Error", message: "Image not found." });
     }
 
-    const imageBuffer = result.rows[0].image;
+    let imageBuffer = result.rows[0].image;
+
+    if (imgSize === 'small') {
+      // resize image to max 150x150
+      imageBuffer = await sharp(imageBuffer)
+        .resize({ width: 250, height: 250, fit: 'inside' })
+        .jpeg()
+        .toBuffer();
+    }
 
     res.writeHead(200, {
       "Content-Type": "image/jpeg", // Change this if needed

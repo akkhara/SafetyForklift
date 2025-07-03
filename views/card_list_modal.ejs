@@ -143,7 +143,7 @@
 
                         <div class="mb-3">
                           <label for="uid" class="form-label">UID:</label>
-                          <input type="text" class="form-control" id="uid" name="uid" required />
+                          <input type="text" class="form-control" id="uid" name="uid" required pattern="^[0-9a-fA-F]+$" title="กรุณากรอกเลขฐาน 16 (0-9, a-f, A-F)">
                         </div>
 
                         <div class="mb-3">
@@ -329,6 +329,16 @@
                 function clearAllFleets() {
                   document.querySelectorAll('#fleet_checkbox_list input[type="checkbox"]').forEach(cb => cb.checked = false);
                 }
+
+                document.getElementById('cardForm').addEventListener('submit', function(e) {
+                  const uid = document.getElementById('uid').value.trim();
+                  // ตรวจสอบว่าเป็นเลขฐาน 16 (0-9, a-f, A-F) และความยาวคู่
+                  if (!/^[0-9a-fA-F]+$/.test(uid) || uid.length % 2 !== 0) {
+                    alert('UID ต้องเป็นเลขฐาน 16 (0-9, a-f, A-F) และมีจำนวนหลักเป็นเลขคู่');
+                    e.preventDefault();
+                    return false;
+                  }
+                });
               </script>
 </body>
 

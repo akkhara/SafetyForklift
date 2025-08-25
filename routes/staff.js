@@ -374,7 +374,7 @@ router.get('/by-company/:companyId', async (req, res) => {
       FROM staff
       WHERE company_id = $1
         AND deleted_at IS NULL
-      ORDER BY name ASC
+      ORDER BY name COLLATE "th-x-icu" ASC
     `;
     const result = await client.query(query, [companyId]);
     res.json({ staffs: result.rows });

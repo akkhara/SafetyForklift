@@ -227,4 +227,53 @@ router.post('/delete/:id', async (req, res) => {
   }
 });
 
+/* -----------------------------------------
+   5) ดึง Card ตามบริษัท (GET /management/card/by-company/:companyId)
+------------------------------------------*/
+router.get('/by-company/:companyId', async (req, res) => {
+  const companyId = req.params.companyId;
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT c.id, c.uid, s.name AS staff_name
+      FROM card c
+      LEFT JOIN staff s ON c.assigned_staff_id = s.id
+      WHERE c.company_id = $1
+        AND c.deleted_at IS NULL
+      ORDER BY s.name ASC, c.uid ASC
+    `;
+    const result = await client.query(query, [companyId]);
+    res.json({ cards: result.rows });
+  } catch (error) {
+    console.error('Error fetching cards by company:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
+/* -----------------------------------------
+   6) ดึง Fleet IDs ที่เชื่อมโยงกับ Card นี้ (GET /management/card/fleets/:cardId)
+------------------------------------------*/
+router.get('/fleets/:cardId', async (req, res) => {
+  const cardId = req.params.cardId;
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT fleet_id
+      FROM card_fleet
+      WHERE card_id = $1
+    `;
+    const result = await client.query(query, [cardId]);
+    const fleetIds = result.rows.map(row => row.fleet_id);
+    res.json({ fleetIds });
+  } catch (error) {
+    console.error('Error fetching fleets for card:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;
+

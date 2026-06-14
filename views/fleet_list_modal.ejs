@@ -1,32 +1,39 @@
 <!DOCTYPE html>
 <html data-bs-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Fleet Management</title>
-    <!-- Bootstrap 5 CSS -->
-    <!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"-->
-    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/united/bootstrap.min.css" rel="stylesheet">
-    <style>  
-      body {
-        padding-top: 70px;
-        /* ปรับตามความสูงของ Navbar */
-      }
-    </style>
-  </head>
-  <body>
-    <!-- เรียกใช้ Partial Navbar -->
-    <%- include('partials/navbar') %>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Fleet Management</title>
+  <!-- Bootstrap 5 CSS -->
+  <!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"-->
+  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/united/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 70px;
+      /* ปรับตามความสูงของ Navbar */
+    }
+
+    #card_checkbox_list {
+      max-height: 180px;
+      /* ปรับความสูงตามต้องการ */
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 8px;
+      background: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- เรียกใช้ Partial Navbar -->
+  <%- include('partials/navbar') %>
 
     <div class="container-fluid mt-4">
       <h1>Fleet Management</h1>
 
       <!-- ปุ่ม Add Fleet -->
-      <button
-        class="btn btn-primary mb-3"
-        data-bs-toggle="modal"
-        data-bs-target="#fleetModal"
-        onclick="openAddFleetModal()"
-      >
+      <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#fleetModal"
+        onclick="openAddFleetModal()">
         Add Fleet
       </button>
 
@@ -50,32 +57,52 @@
           </tr>
         </thead>
         <tbody>
-          <% if (fleets.length === 0) { %>
+          <% if (fleets.length===0) { %>
             <tr>
               <td colspan="13" class="text-center">No fleet found.</td>
             </tr>
-          <% } else { %>
-            <% fleets.forEach(f => { %>
-              <tr>
-                <td><%= f.fleet_id %></td>
-                <td><%= f.vehicle_name || '' %></td>
-                <td><%= f.vehicle_type || '' %></td>
-                <td><%= f.make || '' %></td>
-                <td><%= f.model || '' %></td>
-                <td><%= f.year || '' %></td>
-                <td><%= f.company_name || '' %></td>
-                <td><%= f.site_name || '' %></td>
-                <td><%= f.checklist_name || '' %></td>
-                <td><%= f.vehicle_status || '' %></td>
-                <td><%= f.device_id || '' %></td>
-                <td><%= f.is_registered ? 'Yes' : 'No' %></td>
-                <td>
-                  <!-- ปุ่ม Edit -->
-                  <button
-                    class="btn btn-sm btn-warning"
-                    data-bs-toggle="modal"
-                    data-bs-target="#fleetModal"
-                    onclick="openEditFleetModal(
+            <% } else { %>
+              <% fleets.forEach(f=> { %>
+                <tr>
+                  <td>
+                    <%= f.fleet_id %>
+                  </td>
+                  <td>
+                    <%= f.vehicle_name || '' %>
+                  </td>
+                  <td>
+                    <%= f.vehicle_type || '' %>
+                  </td>
+                  <td>
+                    <%= f.make || '' %>
+                  </td>
+                  <td>
+                    <%= f.model || '' %>
+                  </td>
+                  <td>
+                    <%= f.year || '' %>
+                  </td>
+                  <td>
+                    <%= f.company_name || '' %>
+                  </td>
+                  <td>
+                    <%= f.site_name || '' %>
+                  </td>
+                  <td>
+                    <%= f.checklist_name || '' %>
+                  </td>
+                  <td>
+                    <%= f.vehicle_status || '' %>
+                  </td>
+                  <td>
+                    <%= f.device_id || '' %>
+                  </td>
+                  <td>
+                    <%= f.is_registered ? 'Yes' : 'No' %>
+                  </td>
+                  <td>
+                    <!-- ปุ่ม Edit -->
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#fleetModal" onclick="openEditFleetModal(
                       <%= f.fleet_id %>,
                       '<%= f.vehicle_name ? f.vehicle_name.replace(/'/g, '\\\'') : '' %>',
                       '<%= f.vehicle_type ? f.vehicle_type.replace(/'/g, '\\\'') : '' %>',
@@ -87,118 +114,102 @@
                       <%= f.checklist_id ? f.checklist_id : 'null' %>,
                       '<%= f.vehicle_status ? f.vehicle_status.replace(/'/g, '\\\'') : '' %>',
                       '<%= f.device_id ? f.device_id.replace(/'/g, '\\\'') : '' %>',
-                      <%= f.is_registered ? 'true' : 'false' %>
-                    )"
-                  >
-                    Edit
-                  </button>
-                  <!-- ปุ่ม Delete -->
-                  <form
-                    action="/management/fleet/delete/<%= f.fleet_id %>"
-                    method="POST"
-                    class="d-inline"
-                    onsubmit="return confirm('Are you sure you want to delete this fleet?');"
-                  >
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                  </form>
-                </td>
-              </tr>
-            <% }) %>
-          <% } %>
+                      <%= f.is_registered ? 'true' : 'false' %>,
+                      <%= JSON.stringify(f.card_ids || []) %>
+                    )">
+                      Edit
+                    </button>
+                    <!-- ปุ่ม Delete -->
+                    <form action="/management/fleet/delete/<%= f.fleet_id %>" method="POST" class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to delete this fleet?');">
+                      <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                <% }) %>
+                  <% } %>
         </tbody>
       </table>
     </div>
 
     <!-- Modal สำหรับ Add/Edit Fleet -->
-    <div
-      class="modal fade"
-      id="fleetModal"
-      tabindex="-1"
-      aria-labelledby="fleetModalLabel"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="fleetModal" tabindex="-1" aria-labelledby="fleetModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <form id="fleetForm" method="POST">
             <div class="modal-header">
               <h5 class="modal-title" id="fleetModalLabel">Add Fleet</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <input type="hidden" id="fleetId" />
 
               <div class="mb-3">
                 <label for="vehicle_name" class="form-label">Vehicle Name:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="vehicle_name"
-                  name="vehicle_name"
-                />
+                <input type="text" class="form-control" id="vehicle_name" name="vehicle_name" />
               </div>
 
               <div class="mb-3">
                 <label for="vehicle_type" class="form-label">Type:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="vehicle_type"
-                  name="vehicle_type"
-                />
+                <input type="text" class="form-control" id="vehicle_type" name="vehicle_type" />
               </div>
 
               <div class="mb-3">
                 <label for="make" class="form-label">Make:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="make"
-                  name="make"
-                />
+                <input type="text" class="form-control" id="make" name="make" />
               </div>
 
               <div class="mb-3">
                 <label for="model" class="form-label">Model:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="model"
-                  name="model"
-                />
+                <input type="text" class="form-control" id="model" name="model" />
               </div>
 
               <div class="mb-3">
                 <label for="year" class="form-label">Year:</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="year"
-                  name="year"
-                />
+                <input type="number" class="form-control" id="year" name="year" />
               </div>
 
               <div class="mb-3">
                 <label for="company_id" class="form-label">Company:</label>
-                <select class="form-select" id="company_id" name="company_id">
+                <select class="form-select" id="company_id" name="company_id" onchange="updateCardList();">
                   <option value="">-- None --</option>
-                  <% companies.forEach(comp => { %>
-                    <option value="<%= comp.id %>"><%= comp.name %></option>
-                  <% }) %>
+                  <% companies.forEach(comp=> { %>
+                    <option value="<%= comp.id %>">
+                      <%= comp.name %>
+                    </option>
+                    <% }) %>
                 </select>
+              </div>
+
+              <div class="mb-3" id="copy_permissions_container" style="display: none;">
+                <label for="copy_fleet_id" class="form-label">Copy card permissions from:</label>
+                <select class="form-select" id="copy_fleet_id" onchange="copyPermissionsFromFleet();">
+                  <option value="">-- Select Fleet to Copy From --</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Cards:</label>
+                <div class="mb-2">
+                  <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="selectAllCards()">Select
+                    All</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllCards()">Clear
+                    All</button>
+                </div>
+                <div id="card_checkbox_list">
+                  <span class="text-muted">-- Select a Company First --</span>
+                </div>
               </div>
 
               <div class="mb-3">
                 <label for="site_id" class="form-label">Site:</label>
                 <select class="form-select" id="site_id" name="site_id">
                   <option value="">-- None --</option>
-                  <% sites.forEach(si => { %>
-                    <option value="<%= si.id %>"><%= si.name %></option>
-                  <% }) %>
+                  <% sites.forEach(si=> { %>
+                    <option value="<%= si.id %>">
+                      <%= si.name %>
+                    </option>
+                    <% }) %>
                 </select>
               </div>
 
@@ -206,39 +217,26 @@
                 <label for="checklist_id" class="form-label">Checklist:</label>
                 <select class="form-select" id="checklist_id" name="checklist_id">
                   <option value="">-- None --</option>
-                  <% checklists.forEach(ch => { %>
-                    <option value="<%= ch.id %>"><%= ch.name %></option>
-                  <% }) %>
+                  <% checklists.forEach(ch=> { %>
+                    <option value="<%= ch.id %>">
+                      <%= ch.name %>
+                    </option>
+                    <% }) %>
                 </select>
               </div>
 
               <div class="mb-3">
                 <label for="vehicle_status" class="form-label">Status:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="vehicle_status"
-                  name="vehicle_status"
-                />
+                <input type="text" class="form-control" id="vehicle_status" name="vehicle_status" />
               </div>
 
               <div class="mb-3">
                 <label for="device_id" class="form-label">Device ID:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="device_id"
-                  name="device_id"
-                />
+                <input type="text" class="form-control" id="device_id" name="device_id" />
               </div>
 
               <div class="form-check mb-2">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  id="is_registered"
-                  name="is_registered"
-                />
+                <input class="form-check-input" type="checkbox" id="is_registered" name="is_registered" />
                 <label class="form-check-label" for="is_registered">
                   Is Registered
                 </label>
@@ -246,11 +244,7 @@
 
             </div>
             <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                 Close
               </button>
               <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -263,9 +257,7 @@
     </div>
 
     <!-- Bootstrap 5 JS -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
       // ฟังก์ชันเปิด Modal ในโหมด Add Fleet
@@ -287,6 +279,11 @@
         document.getElementById('device_id').value = '';
         document.getElementById('is_registered').checked = false;
 
+        // เคลียร์รายการบัตร
+        document.getElementById('card_checkbox_list').innerHTML = '<span class="text-muted">-- Select a Company First --</span>';
+        document.getElementById('copy_permissions_container').style.display = 'none';
+        document.getElementById('copy_fleet_id').innerHTML = '<option value="">-- Select Fleet to Copy From --</option>';
+
         // ในโหมด Add ให้สามารถแก้ไขได้
         document.getElementById('device_id').readOnly = false;
       }
@@ -304,7 +301,8 @@
         checklist_id,
         vehicle_status,
         device_id,
-        is_registered
+        is_registered,
+        cardIds
       ) {
         document.getElementById('fleetModalLabel').textContent = 'Edit Fleet';
         document.getElementById('fleetForm').action = '/management/fleet/edit/' + fleetId;
@@ -341,9 +339,111 @@
         document.getElementById('device_id').value = device_id;
         document.getElementById('is_registered').checked = (is_registered === true);
 
+        // โหลดรายการบัตรตามบริษัทและตั้งค่าบัตรที่เลือก
+        updateCardList(cardIds || []);
+
         // ตั้งค่าให้ device_id เป็นแบบอ่านอย่างเดียว (read-only)
         document.getElementById('device_id').readOnly = true;
       }
+
+      function updateCardList(selectedCardIds) {
+        const companyId = document.getElementById('company_id').value;
+        const cardListDiv = document.getElementById('card_checkbox_list');
+        const copyPermissionsContainer = document.getElementById('copy_permissions_container');
+        const copyFleetDropdown = document.getElementById('copy_fleet_id');
+
+        cardListDiv.innerHTML = '<span class="text-muted">-- Select a Company First --</span>';
+        copyPermissionsContainer.style.display = 'none';
+        copyFleetDropdown.innerHTML = '<option value="">-- Select Fleet to Copy From --</option>';
+
+        if (!companyId) return;
+
+        // แสดง Dropdown สำหรับคัดลอกสิทธิ์
+        copyPermissionsContainer.style.display = 'block';
+
+        // 1) ดึงรายการ Fleet ในบริษัทเดียวกันเพื่อคัดลอก
+        const currentFleetId = document.getElementById('fleetId').value;
+        fetch(`/management/fleet/by-company/${companyId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.fleets) {
+              data.fleets.forEach(fleet => {
+                if (currentFleetId && String(fleet.id) === String(currentFleetId)) {
+                  return; // ข้าม Fleet ปัจจุบัน
+                }
+                const option = document.createElement('option');
+                option.value = fleet.id;
+                option.textContent = fleet.vehicle_name;
+                copyFleetDropdown.appendChild(option);
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching fleets by company:', error);
+          });
+
+        // 2) ดึงรายการบัตรทั้งหมดในบริษัทเดียวกัน
+        fetch(`/management/card/by-company/${companyId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.cards) {
+              cardListDiv.innerHTML = '';
+              if (data.cards.length === 0) {
+                cardListDiv.innerHTML = '<span class="text-muted">No cards found for this company.</span>';
+                return;
+              }
+              data.cards.forEach(card => {
+                const checkboxId = `card_${card.id}`;
+                const checked = selectedCardIds && selectedCardIds.includes(card.id) ? 'checked' : '';
+                const displayText = card.staff_name ? `${card.staff_name} (${card.uid})` : `Unassigned (${card.uid})`;
+                cardListDiv.innerHTML += `
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="card_ids" id="${checkboxId}" value="${card.id}" ${checked}>
+                    <label class="form-check-label" for="${checkboxId}">${displayText}</label>
+                  </div>
+                `;
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching cards:', error);
+          });
+      }
+
+      function copyPermissionsFromFleet() {
+        const copyFleetId = document.getElementById('copy_fleet_id').value;
+        if (!copyFleetId) return;
+
+        fetch(`/management/fleet/cards/${copyFleetId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.cardIds) {
+              const cardIds = data.cardIds.map(Number);
+              document.querySelectorAll('#card_checkbox_list input[type="checkbox"]').forEach(cb => {
+                cb.checked = cardIds.includes(Number(cb.value));
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error copying permissions:', error);
+          });
+      }
+
+      function leHexToBeHex(leHex) {
+        if (!leHex) return '';
+        const bytes = leHex.match(/.{1,2}/g);
+        if (!bytes) return '';
+        return bytes.reverse().join('').toUpperCase();
+      }
+
+      function selectAllCards() {
+        document.querySelectorAll('#card_checkbox_list input[type="checkbox"]').forEach(cb => cb.checked = true);
+      }
+
+      function clearAllCards() {
+        document.querySelectorAll('#card_checkbox_list input[type="checkbox"]').forEach(cb => cb.checked = false);
+      }
     </script>
-  </body>
+</body>
+
 </html>

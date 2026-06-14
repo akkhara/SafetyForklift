@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
   const client = await pool.connect();
   try {
-    // JOIN ตาราง company, site, checklist เพื่อแสดงชื่อ
+    // JOIN ตาราง company, site, checklist เพื่อแสดงชื่อ และ ดึงการ์ดที่เชื่อมโยง
     const query = `
       SELECT
         f.id AS fleet_id,
@@ -29,12 +29,15 @@ router.get('/', async (req, res) => {
         s.id AS site_id,
         s.name AS site_name,
         ch.id AS checklist_id,
-        ch.name AS checklist_name
+        ch.name AS checklist_name,
+        ARRAY_REMOVE(ARRAY_AGG(cf.card_id), NULL) AS card_ids
       FROM fleet f
       LEFT JOIN company c ON f.company_id = c.id
       LEFT JOIN site s ON f.site_id = s.id
       LEFT JOIN checklist ch ON f.checklist_id = ch.id
+      LEFT JOIN card_fleet cf ON f.id = cf.fleet_id
       WHERE f.deleted_at IS NULL
+      GROUP BY f.id, c.id, s.id, ch.id
       ORDER BY f.vehicle_name ASC
     `;
     const result = await client.query(query);
@@ -91,9 +94,13 @@ router.post('/add', async (req, res) => {
     device_id,
     is_registered
   } = req.body;
+  let card_ids = req.body.card_ids;
+  if (!card_ids) card_ids = [];
+  if (!Array.isArray(card_ids)) card_ids = [card_ids];
 
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
     const insertQuery = `
       INSERT INTO fleet (
         vehicle_name,
@@ -128,6 +135,15 @@ router.post('/add', async (req, res) => {
     ]);
     const newFleetId = result.rows[0].id;
 
+    // เพิ่ม card ที่เลือก
+    if (card_ids.length > 0 && card_ids[0] !== '') {
+      const insertCardQuery = `
+        INSERT INTO card_fleet (fleet_id, card_id)
+        SELECT $1, UNNEST($2::int[])
+      `;
+      await client.query(insertCardQuery, [newFleetId, card_ids.map(Number)]);
+    }
+
     // เพิ่มข้อมูลลงใน usage_log สำหรับการเพิ่ม fleet
     const usageLogQuery = `
       INSERT INTO usage_log (
@@ -148,8 +164,10 @@ router.post('/add', async (req, res) => {
       req.headers['user-agent'] || ''
     ]);
 
+    await client.query('COMMIT');
     res.redirect('/management/fleet');
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error adding fleet:', error);
     res.status(500).send('Internal server error');
   } finally {
@@ -175,9 +193,13 @@ router.post('/edit/:id', async (req, res) => {
     device_id,
     is_registered
   } = req.body;
+  let card_ids = req.body.card_ids;
+  if (!card_ids) card_ids = [];
+  if (!Array.isArray(card_ids)) card_ids = [card_ids];
 
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
     const updateQuery = `
       UPDATE fleet
       SET
@@ -211,6 +233,18 @@ router.post('/edit/:id', async (req, res) => {
       fleetId
     ]);
 
+    // ลบ card เดิมทั้งหมด
+    await client.query('DELETE FROM card_fleet WHERE fleet_id = $1', [fleetId]);
+
+    // เพิ่ม card ใหม่
+    if (card_ids.length > 0 && card_ids[0] !== '') {
+      const insertCardQuery = `
+        INSERT INTO card_fleet (fleet_id, card_id)
+        SELECT $1, UNNEST($2::int[])
+      `;
+      await client.query(insertCardQuery, [fleetId, card_ids.map(Number)]);
+    }
+
     // เพิ่มข้อมูลลงใน usage_log สำหรับการแก้ไข fleet
     const usageLogQuery = `
       INSERT INTO usage_log (
@@ -231,8 +265,10 @@ router.post('/edit/:id', async (req, res) => {
       req.headers['user-agent'] || ''
     ]);
 
+    await client.query('COMMIT');
     res.redirect('/management/fleet');
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error editing fleet:', error);
     res.status(500).send('Internal server error');
   } finally {
@@ -306,4 +342,28 @@ router.get('/by-company/:companyId', async (req, res) => {
   }
 });
 
+/* -----------------------------------------
+   6) ดึง Card IDs ที่สามารถใช้กับ Fleet นี้ได้ (GET /management/fleet/cards/:fleetId)
+------------------------------------------*/
+router.get('/cards/:fleetId', async (req, res) => {
+  const fleetId = req.params.fleetId;
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT card_id
+      FROM card_fleet
+      WHERE fleet_id = $1
+    `;
+    const result = await client.query(query, [fleetId]);
+    const cardIds = result.rows.map(row => row.card_id);
+    res.json({ cardIds });
+  } catch (error) {
+    console.error('Error fetching cards for fleet:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;
+

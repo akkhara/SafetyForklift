@@ -613,7 +613,7 @@ app.post('/checkin', async (req, res) => {
       [data.cardID, fleet_id]
     );
     if (cardFleetResult.rows.length === 0) {
-      return res.status(403).json({ Status: "Error", message: "This card does not have permission to use this fleet." });
+      return res.status(403).json({ Status: "Error", message: `This card[${data.cardID}] does not have permission to use this fleet.` });
     }
 
     // 3. ดึงข้อมูล staff, card, fleet, company (เหมือนเดิม)
@@ -954,7 +954,7 @@ app.get('/admin', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login');
   }
-  
+
   const user = req.session.user;
 
   // ตรวจสอบสิทธิ์ (ตัวอย่าง: user.role หรือ user.permissions)
@@ -1024,7 +1024,7 @@ app.post('/impact', async (req, res) => {
 app.post('/position', async (req, res) => {
   const { device_id, latitude, longitude, timestamp } = req.body;
 
-  console.log({device_id, latitude, longitude, timestamp});
+  console.log({ device_id, latitude, longitude, timestamp });
 
   if (!device_id || latitude === undefined || longitude === undefined || !timestamp) {
     return res.status(400).json({

@@ -161,7 +161,8 @@
 
                         <div class="mb-3">
                           <label for="uid" class="form-label">UID:</label>
-                          <input type="text" class="form-control" id="uid" name="uid" required pattern="^[0-9a-fA-F]+$" title="กรุณากรอกเลขฐาน 16 (0-9, a-f, A-F)">
+                          <input type="text" class="form-control" id="uid" name="uid" required pattern="^[0-9a-fA-F]+$"
+                            title="กรุณากรอกเลขฐาน 16 (0-9, a-f, A-F)">
                         </div>
 
                         <div class="mb-3">
@@ -184,13 +185,23 @@
                           </select>
                         </div>
 
+                        <div class="mb-3" id="copy_permissions_container" style="display: none;">
+                          <label for="copy_card_id" class="form-label">Copy fleet permissions from:</label>
+                          <select class="form-select" id="copy_card_id" onchange="copyPermissionsFromCard();">
+                            <option value="">-- Select Card to Copy From --</option>
+                          </select>
+                        </div>
+
                         <div class="mb-3">
                           <label class="form-label">Fleets:</label>
                           <div class="mb-2">
-                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="selectAllFleets()">Select All</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllFleets()">Clear All</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1"
+                              onclick="selectAllFleets()">Select All</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                              onclick="clearAllFleets()">Clear All</button>
                           </div>
-                          <div id="fleet_checkbox_list" style="max-height: 180px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; background: #fff;">
+                          <div id="fleet_checkbox_list"
+                            style="max-height: 180px; overflow-y: auto; border: 1px solid #ddd; padding: 8px; background: #fff;">
                             <span class="text-muted">-- Select a Company First --</span>
                           </div>
                         </div>
@@ -230,7 +241,6 @@
               <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
               <script>
-                // ฟังก์ชันเปิด Modal ในโหมด Add Card
                 function openAddCardModal() {
                   document.getElementById('cardModalLabel').textContent = 'Add Card';
                   document.getElementById('cardForm').action = '/management/card/add';
@@ -239,7 +249,9 @@
                   document.getElementById('cardId').value = '';
                   document.getElementById('assigned_staff_id').selectedIndex = 0;
                   document.getElementById('company_id').selectedIndex = 0;
-                  document.getElementById('fleet_ids').innerHTML = ''; // เคลียร์ Fleet ที่เลือก
+                  document.getElementById('fleet_checkbox_list').innerHTML = '<span class="text-muted">-- Select a Company First --</span>';
+                  document.getElementById('copy_permissions_container').style.display = 'none';
+                  document.getElementById('copy_card_id').innerHTML = '<option value="">-- Select Card to Copy From --</option>';
 
                   // กำหนด issue_date = วันที่ปัจจุบัน
                   const today = new Date();
@@ -321,24 +333,58 @@
                 function updateFleetList(selectedFleetIds) {
                   const companyId = document.getElementById('company_id').value;
                   const fleetListDiv = document.getElementById('fleet_checkbox_list');
+                  const copyPermissionsContainer = document.getElementById('copy_permissions_container');
+                  const copyCardDropdown = document.getElementById('copy_card_id');
+
                   fleetListDiv.innerHTML = '<span class="text-muted">-- Select a Company First --</span>';
+                  copyPermissionsContainer.style.display = 'none';
+                  copyCardDropdown.innerHTML = '<option value="">-- Select Card to Copy From --</option>';
 
                   if (!companyId) return;
 
+                  // แสดง Dropdown สำหรับคัดลอกสิทธิ์
+                  copyPermissionsContainer.style.display = 'block';
+
+                  // 1) ดึงรายการ Card ในบริษัทเดียวกันเพื่อคัดลอก
+                  const currentCardId = document.getElementById('cardId').value;
+                  fetch(`/management/card/by-company/${companyId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                      if (data && data.cards) {
+                        data.cards.forEach(card => {
+                          if (currentCardId && String(card.id) === String(currentCardId)) {
+                            return; // ข้าม Card ปัจจุบัน
+                          }
+                          const option = document.createElement('option');
+                          option.value = card.id;
+                          option.textContent = card.staff_name ? `${card.staff_name} (${card.uid})` : `Unassigned (${card.uid})`;
+                          copyCardDropdown.appendChild(option);
+                        });
+                      }
+                    })
+                    .catch(error => {
+                      console.error('Error fetching cards by company:', error);
+                    });
+
+                  // 2) ดึงรายการ Fleet ในบริษัทเดียวกัน
                   fetch(`/management/fleet/by-company/${companyId}`)
                     .then(response => response.json())
                     .then(data => {
                       if (data && data.fleets) {
                         fleetListDiv.innerHTML = '';
+                        if (data.fleets.length === 0) {
+                          fleetListDiv.innerHTML = '<span class="text-muted">No fleets found for this company.</span>';
+                          return;
+                        }
                         data.fleets.forEach(fleet => {
                           const checkboxId = `fleet_${fleet.id}`;
                           const checked = selectedFleetIds && selectedFleetIds.includes(fleet.id) ? 'checked' : '';
                           fleetListDiv.innerHTML += `
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="fleet_ids" id="${checkboxId}" value="${fleet.id}" ${checked}>
-              <label class="form-check-label" for="${checkboxId}">${fleet.vehicle_name}</label>
-            </div>
-          `;
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" name="fleet_ids" id="${checkboxId}" value="${fleet.id}" ${checked}>
+                              <label class="form-check-label" for="${checkboxId}">${fleet.vehicle_name}</label>
+                            </div>
+                          `;
                         });
                       }
                     })
@@ -355,7 +401,26 @@
                   document.querySelectorAll('#fleet_checkbox_list input[type="checkbox"]').forEach(cb => cb.checked = false);
                 }
 
-                document.getElementById('cardForm').addEventListener('submit', function(e) {
+                function copyPermissionsFromCard() {
+                  const copyCardId = document.getElementById('copy_card_id').value;
+                  if (!copyCardId) return;
+
+                  fetch(`/management/card/fleets/${copyCardId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                      if (data && data.fleetIds) {
+                        const fleetIds = data.fleetIds.map(Number);
+                        document.querySelectorAll('#fleet_checkbox_list input[type="checkbox"]').forEach(cb => {
+                          cb.checked = fleetIds.includes(Number(cb.value));
+                        });
+                      }
+                    })
+                    .catch(error => {
+                      console.error('Error copying permissions:', error);
+                    });
+                }
+
+                document.getElementById('cardForm').addEventListener('submit', function (e) {
                   const uid = document.getElementById('uid').value.trim();
                   // ตรวจสอบว่าเป็นเลขฐาน 16 (0-9, a-f, A-F) และความยาวคู่
                   if (!/^[0-9a-fA-F]+$/.test(uid) || uid.length % 2 !== 0) {
@@ -365,7 +430,7 @@
                   }
                 });
 
-                $(document).ready(function() {
+                $(document).ready(function () {
                   // เพิ่ม input สำหรับ filter แต่ละคอลัมน์
                   $('#cardTable thead tr')
                     .clone(true)
